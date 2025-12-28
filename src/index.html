@@ -35,129 +35,295 @@
     </script>
 
     <style>
-        /* Modern Animated Background */
+        /* Cosmic Theme Background */
         body {
             position: relative;
             min-height: 100vh;
             overflow-x: hidden;
+            background: #000428;  /* fallback for old browsers */
+            background: -webkit-linear-gradient(to bottom, #000428, #004e92);  /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to bottom, #000428, #004e92); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         }
         
-        .animated-bg {
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(103, 58, 183, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 80%, rgba(33, 150, 243, 0.2) 0%, transparent 40%),
+                radial-gradient(ellipse at 40% 60%, rgba(156, 39, 176, 0.2) 0%, transparent 40%);
+            opacity: 0.8;
+        }
+        
+        /* Stars Container */
+        .stars-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
         }
         
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        
-        /* Floating particles */
-        .particles-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        
-        .particle {
+        /* Stars Layers */
+        .stars {
             position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.1);
-            animation: float 20s infinite linear;
-        }
-        
-        @keyframes float {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0.7;
-            }
-            50% {
-                opacity: 0.3;
-            }
-            100% {
-                transform: translateY(-1000px) rotate(720deg);
-                opacity: 0.7;
-            }
-        }
-        
-        /* Grid overlay effect */
-        .grid-overlay {
-            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-image: 
-                linear-gradient(rgba(102, 126, 234, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(102, 126, 234, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: -1;
-            opacity: 0.5;
-            animation: gridMove 30s linear infinite;
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #eee, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: starsShift 60s linear infinite;
         }
         
-        @keyframes gridMove {
+        .stars2 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 50px 160px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 200px, #eee, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 150px 100px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 190px 50px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 230px 150px, #eee, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 250px 250px;
+            animation: starsShift 80s linear infinite reverse;
+            opacity: 0.7;
+        }
+        
+        .stars3 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 10px 10px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 100px 150px, #eee, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 200px 50px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 250px 100px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 300px 200px, #eee, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            animation: starsShift 100s linear infinite;
+            opacity: 0.5;
+        }
+        
+        @keyframes starsShift {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 300px 300px;
+            }
+        }
+        
+        /* Shooting Stars */
+        .shooting-star {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8), transparent);
+            border-radius: 50%;
+            animation: shooting 5s linear infinite;
+            opacity: 0;
+            transform: rotate(45deg);
+        }
+        
+        @keyframes shooting {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(45deg);
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(500px, 500px) rotate(45deg);
+            }
+        }
+        
+        /* Planets */
+        .planet {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(1px);
+        }
+        
+        .planet-1 {
+            width: 150px;
+            height: 150px;
+            top: 15%;
+            right: 10%;
+            background: radial-gradient(circle at 30% 30%, #673ab7, #512da8, #311b92);
+            box-shadow: 0 0 50px rgba(103, 58, 183, 0.3);
+            animation: floatPlanet 40s ease-in-out infinite;
+        }
+        
+        .planet-2 {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 5%;
+            background: radial-gradient(circle at 40% 40%, #2196f3, #1976d2, #0d47a1);
+            box-shadow: 0 0 30px rgba(33, 150, 243, 0.3);
+            animation: floatPlanet 50s ease-in-out infinite reverse;
+        }
+        
+        .planet-3 {
+            width: 60px;
+            height: 60px;
+            top: 70%;
+            right: 15%;
+            background: radial-gradient(circle at 50% 50%, #9c27b0, #7b1fa2, #4a148c);
+            box-shadow: 0 0 25px rgba(156, 39, 176, 0.3);
+            animation: floatPlanet 35s ease-in-out infinite;
+        }
+        
+        @keyframes floatPlanet {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(20px, -20px);
+            }
+            50% {
+                transform: translate(0, -40px);
+            }
+            75% {
+                transform: translate(-20px, -20px);
+            }
+        }
+        
+        /* Nebula Clouds */
+        .nebula {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+        
+        .nebula-1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 5%;
+            background: radial-gradient(circle, rgba(103, 58, 183, 0.4), transparent 70%);
+            animation: nebulaFloat 50s ease-in-out infinite;
+        }
+        
+        .nebula-2 {
+            width: 400px;
+            height: 400px;
+            bottom: 10%;
+            right: 5%;
+            background: radial-gradient(circle, rgba(33, 150, 243, 0.3), transparent 70%);
+            animation: nebulaFloat 60s ease-in-out infinite reverse;
+        }
+        
+        @keyframes nebulaFloat {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+        
+        /* Cosmic Dust */
+        .cosmic-dust {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+            opacity: 0.15;
+            animation: dustMove 20s linear infinite;
+        }
+        
+        @keyframes dustMove {
             0% {
                 background-position: 0 0;
             }
             100% {
-                background-position: 50px 50px;
+                background-position: 100px 100px;
             }
         }
         
-        /* Subtle noise texture */
-        .noise-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-            z-index: -1;
-            opacity: 0.4;
+        /* Light mode adjustments */
+        .light .cosmic-bg {
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(187, 222, 251, 0.5) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 80%, rgba(179, 229, 252, 0.4) 0%, transparent 40%),
+                radial-gradient(ellipse at 40% 60%, rgba(225, 190, 231, 0.4) 0%, transparent 40%);
         }
         
-        /* Light mode background */
-        .light .animated-bg {
-            background: linear-gradient(-45deg, #e0e7ff, #c7d2fe, #ddd6fe, #f5f3ff);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+        .light .planet-1 {
+            background: radial-gradient(circle at 30% 30%, #bb86fc, #9a67ea, #7e57c2);
+            box-shadow: 0 0 50px rgba(187, 134, 252, 0.3);
         }
         
-        .light .particle {
-            background: rgba(0, 0, 0, 0.05);
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.1);
+        .light .planet-2 {
+            background: radial-gradient(circle at 40% 40%, #82b1ff, #448aff, #2979ff);
+            box-shadow: 0 0 30px rgba(130, 177, 255, 0.3);
         }
         
-        .light .grid-overlay {
-            background-image: 
-                linear-gradient(rgba(102, 126, 234, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+        .light .planet-3 {
+            background: radial-gradient(circle at 50% 50%, #ea80fc, #e040fb, #d500f9);
+            box-shadow: 0 0 25px rgba(234, 128, 252, 0.3);
         }
         
+        .light .nebula-1 {
+            background: radial-gradient(circle, rgba(187, 134, 252, 0.3), transparent 70%);
+        }
+        
+        .light .nebula-2 {
+            background: radial-gradient(circle, rgba(130, 177, 255, 0.2), transparent 70%);
+        }
+        
+        /* Glass effect enhancement for cosmic theme */
         .glass {
             backdrop-filter: blur(16px) saturate(180%);
-            background: rgba(23, 25, 35, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.125);
+            background: rgba(10, 15, 35, 0.75);
+            border: 1px solid rgba(103, 58, 183, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .light .glass {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(187, 134, 252, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
         
         .loader {
@@ -174,20 +340,20 @@
         }
         
         .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #4169e1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
         .btn-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #4169e1 100%);
             transition: all 0.3s ease;
         }
         
         .btn-gradient:hover {
             transform: translateY(-1px);
-            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(138, 43, 226, 0.4);
         }
         
         .method-get {
@@ -199,18 +365,21 @@
         }
         
         .status-ready {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.15);
             color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
         
         .status-update {
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(245, 158, 11, 0.15);
             color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
         
         .status-error {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
         
         .blink {
@@ -242,8 +411,8 @@
             position: fixed;
             bottom: 80px;
             right: 20px;
-            background: rgba(23, 25, 35, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(10, 15, 35, 0.9);
+            border: 1px solid rgba(138, 43, 226, 0.3);
             border-radius: 8px;
             padding: 12px 16px;
             font-size: 0.80rem;
@@ -258,7 +427,7 @@
         
         .light .toast {
             background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(187, 134, 252, 0.3);
             color: #1e293b;
         }
         
@@ -275,6 +444,7 @@
         
         /* Light mode styles */
         .light {
+            background: #e6f7ff;
             color: #1e293b;
         }
         
@@ -375,7 +545,7 @@
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #4169e1 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -387,7 +557,7 @@
         
         .contact-customer:hover {
             transform: translateY(-8px) scale(1.08);
-            box-shadow: 0 12px 28px rgba(139, 92, 246, 0.7);
+            box-shadow: 0 12px 28px rgba(138, 43, 226, 0.7);
             animation-play-state: paused;
         }
         
@@ -401,15 +571,40 @@
             50%  { transform: translateY(-20px); }
             100% { transform: translateY(0); }
         }
+        
+        /* Input focus styles for cosmic theme */
+        input:focus, textarea:focus, select:focus {
+            border-color: #8a2be2 !important;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2) !important;
+        }
     </style>
 </head>
 <body class="text-slate-300 antialiased font-mono min-h-screen">
     
-    <!-- Modern Animated Background -->
-    <div class="animated-bg"></div>
-    <div class="particles-container" id="particles"></div>
-    <div class="grid-overlay"></div>
-    <div class="noise-overlay"></div>
+    <!-- Cosmic Background Elements -->
+    <div class="cosmic-bg"></div>
+    
+    <div class="stars-container">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="stars3"></div>
+    </div>
+    
+    <div class="cosmic-dust"></div>
+    
+    <!-- Shooting Stars -->
+    <div class="shooting-star" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="shooting-star" style="top: 60%; left: 30%; animation-delay: 2s; height: 80px;"></div>
+    <div class="shooting-star" style="top: 40%; left: 80%; animation-delay: 4s; height: 120px;"></div>
+    
+    <!-- Planets -->
+    <div class="planet planet-1"></div>
+    <div class="planet planet-2"></div>
+    <div class="planet planet-3"></div>
+    
+    <!-- Nebula Clouds -->
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
     
     <!-- Loading Screen -->
     <div id="loadingScreen" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
@@ -424,7 +619,7 @@
         <!-- Header -->
         <div class="text-left mb-8">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 md:w-10 h-10 md:h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+                <div class="w-10 md:w-10 h-10 md:h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center glass">
                     <i class="fas fa-code text-white text-lg"></i>
                 </div>
                 <h1 id="titleApi" class="text-3xl md:text-4xl font-semibold gradient-text">KKYNAS API</h1>
@@ -446,14 +641,14 @@
                     type="text" 
                     id="searchInput" 
                     placeholder="Search API endpoints..." 
-                    class="w-full pl-12 pr-5 py-3 text-sm border border-gray-700 bg-gray-800 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    class="w-full pl-12 pr-5 py-3 text-sm border border-gray-700 bg-gray-800 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500 glass"
                 >
             </div>
         </div>
 
         <!-- API Content -->
         <div id="content" class="space-y-4">
-            <div id="noResults" class="text-center py-16 hidden">
+            <div id="noResults" class="text-center py-16 hidden glass">
                 <div class="max-w-md mx-auto">
                     <i class="fas fa-search text-2xl text-slate-500 mb-3"></i>
                     <h3 class="text-xs text-slate-400 mb-2">No results found</h3>
@@ -469,7 +664,7 @@
 <!-- Floating Contact Button -->
 <a id="contactCustomerBtn" href="#" target="_blank" class="contact-customer">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-    <path fill="white" d="M16 3C8.82 3 3 8.82 3 16c0 2.65.83 5.2 2.4 7.36L3 29l5.87-2.33A12.9 12.9 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3zm7.42 18.1c-.32.9-1.58 1.68-2.56 1.89-.67.14-1.55.25-4.48-.96-3.74-1.55-6.14-5.3-6.32-5.55-.18-.25-1.52-2.02-1.52-3.85 0-1.83.96-2.73 1.3-3.1.34-.37.75-.46 1-.46h.72c.23 0 .55-.08.86.65.32.74 1.09 2.57 1.18 2.76.09.18.16.41.03.66-.13.25-.2.41-.39.63-.2.23-.41.5-.59.67-.2.18-.4.37-.17.73.23.36 1.01 1.66 2.17 2.69 1.49 1.33 2.75 1.74 3.12 1.94.37.2.58.18.8-.11.23-.3.92-1.07 1.16-1.44.25-.37.5-.3.84-.18.34.11 2.14 1.01 2.51 1.19.37.18.61.27.7.41.09.14.09.8-.23 1.7z"/>
+    <path fill="white" d="M16 3C8.82 3 3 8.82 3 16c0 2.65.83 5.2 2.4 7.36L3 29l5.87-2.33A12.9 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3zm7.42 18.1c-.32.9-1.58 1.68-2.56 1.89-.67.14-1.55.25-4.48-.96-3.74-1.55-6.14-5.3-6.32-5.55-.18-.25-1.52-2.02-1.52-3.85 0-1.83.96-2.73 1.3-3.1.34-.37.75-.46 1-.46h.72c.23 0 .55-.08.86.65.32.74 1.09 2.57 1.18 2.76.09.18.16.41.03.66-.13.25-.2.41-.39.63-.2.23-.41.5-.59.67-.2.18-.4.37-.17.73.23.36 1.01 1.66 2.17 2.69 1.49 1.33 2.75 1.74 3.12 1.94.37.2.58.18.8-.11.23-.3.92-1.07 1.16-1.44.25-.37.5-.3.84-.18.34.11 2.14 1.01 2.51 1.19.37.18.61.27.7.41.09.14.09.8-.23 1.7z"/>
   </svg>
 </a>
         
@@ -492,49 +687,82 @@
     </main>
     
     <script>
-        // Create floating particles for background
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            if (!particlesContainer) return;
+        // Create dynamic shooting stars
+        function createShootingStars() {
+            const container = document.querySelector('.stars-container');
+            if (!container) return;
             
-            // Clear existing particles
-            particlesContainer.innerHTML = '';
+            // Remove existing shooting stars except the first few
+            const existingStars = container.querySelectorAll('.shooting-star');
+            if (existingStars.length > 3) {
+                for (let i = 3; i < existingStars.length; i++) {
+                    existingStars[i].remove();
+                }
+            }
             
-            // Create particles based on screen size
-            const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 15000);
+            // Create new shooting stars randomly
+            const starCount = Math.floor(Math.random() * 3) + 1; // 1-3 stars
             
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                // Random size between 1px and 4px
-                const size = Math.random() * 3 + 1;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'shooting-star';
                 
                 // Random position
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
                 
-                // Random animation duration and delay
-                const duration = Math.random() * 20 + 10;
-                const delay = Math.random() * 5;
-                particle.style.animationDuration = `${duration}s`;
-                particle.style.animationDelay = `${delay}s`;
+                // Random size and animation delay
+                const height = Math.random() * 80 + 40; // 40-120px
+                const delay = Math.random() * 10; // 0-10s delay
+                const duration = Math.random() * 3 + 3; // 3-6s duration
                 
-                // Random opacity
-                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                star.style.left = `${left}%`;
+                star.style.top = `${top}%`;
+                star.style.height = `${height}px`;
+                star.style.animationDelay = `${delay}s`;
+                star.style.animationDuration = `${duration}s`;
                 
-                particlesContainer.appendChild(particle);
+                container.appendChild(star);
+                
+                // Remove star after animation completes
+                setTimeout(() => {
+                    if (star.parentNode) {
+                        star.remove();
+                    }
+                }, (duration + delay) * 1000);
             }
         }
         
-        // Initialize particles on load
+        // Initialize cosmic effects
         document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
+            // Create initial shooting stars
+            createShootingStars();
             
-            // Recreate particles on resize
-            window.addEventListener('resize', createParticles);
+            // Schedule shooting stars creation at random intervals
+            function scheduleShootingStar() {
+                const delay = Math.random() * 5000 + 3000; // 3-8 seconds
+                setTimeout(() => {
+                    createShootingStars();
+                    scheduleShootingStar();
+                }, delay);
+            }
+            
+            scheduleShootingStar();
+            
+            // Add subtle parallax effect on mouse move
+            document.addEventListener('mousemove', function(e) {
+                const planets = document.querySelectorAll('.planet');
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                
+                planets.forEach((planet, index) => {
+                    const speed = 0.05 + (index * 0.02);
+                    const x = (mouseX - 0.5) * speed * 100;
+                    const y = (mouseY - 0.5) * speed * 100;
+                    
+                    planet.style.transform = `translate(${x}px, ${y}px)`;
+                });
+            });
         });
     </script>
     
