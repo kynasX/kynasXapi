@@ -1,9 +1,10 @@
-
 let settings = {};
 let allApiItems = [];
+let currentCategory = 'all';
+let originalCategories = [];
 
 const categoryIcons = {
-    'Downloader': 'folder',
+    'Downloader': 'download',
     'Imagecreator': 'image',
     'Openai': 'smart_toy',
     'Random': 'shuffle',
@@ -11,12 +12,22 @@ const categoryIcons = {
     'Stalker': 'visibility',
     'Tools': 'build',
     'Orderkuota': 'paid',
-    'AI Tools': 'psychology'
+    'AI Tools': 'psychology',
+    'All': 'grid_view'
 };
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
+    
+    // Add keyboard shortcut for search
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.focus();
+        }
+    });
 });
 
 async function initializeApp() {
@@ -26,6 +37,7 @@ async function initializeApp() {
         await loadAPIData();
         setupEventListeners();
         updateActiveUsers();
+        updateEndpointCount();
         
     } catch (error) {
         console.error('Error:', error);
@@ -70,29 +82,40 @@ function setupUI() {
     
     if (titleApi) titleApi.textContent = settings.name || "Kynas API";
     if (descApi) descApi.textContent = settings.description || "Interactive API documentation with real-time testing";
-    if (footer) footer.textContent = `© ${new Date().getFullYear()} ${settings.creator || "Kynas"} - ${settings.name || "Kynas API"}`;
+    if (footer) footer.textContent = `© ${new Date().getFullYear()} ${settings.creator || "Kynas"} • Cosmic Edition v1.0`;
     
+    // Social links
     const telegramLink = document.getElementById('telegramLink');
     const whatsappLink = document.getElementById('whatsappLink');
     const youtubeLink = document.getElementById('youtubeLink');
-    const Information = document.getElementById("contactCustomerBtn");
+    const githubLink = document.getElementById('githubLink');
+    const contactBtn = document.getElementById('contactCustomerBtn');
     
     if (telegramLink) telegramLink.href = settings.linkTelegram || '#';
-    if (telegramLink) telegramLink.href = settings.linkTelegram || '#';
-    if (Information) Information.href = settings.linkWhatsapp || '#';
+    if (whatsappLink) whatsappLink.href = settings.linkWhatsapp || '#';
     if (youtubeLink) youtubeLink.href = settings.linkYoutube || '#';
+    if (githubLink) githubLink.href = settings.linkGithub || '#';
+    if (contactBtn) contactBtn.href = settings.linkWhatsapp || '#';
 }
 
 function updateActiveUsers() {
     const el = document.getElementById('activeUsers');
     if (el) {
         const users = Math.floor(Math.random() * 5000) + 1000;
-        el.textContent = users.toLocaleString();
+        el.textContent = users.toLocaleString() + '+';
     }
 }
 
-// Simpan data asli
-let originalCategories = [];
+function updateEndpointCount() {
+    const el = document.getElementById('endpointCount');
+    if (el && originalCategories.length > 0) {
+        let total = 0;
+        originalCategories.forEach(category => {
+            if (category.items) total += category.items.length;
+        });
+        el.textContent = total;
+    }
+}
 
 async function loadAPIData() {
     console.log('Loading API data...');
@@ -103,24 +126,113 @@ async function loadAPIData() {
             settings.categories = [];
         }
         
-        // Simpan data asli
+        // Save original data
         originalCategories = JSON.parse(JSON.stringify(settings.categories || []));
         console.log('Original categories saved:', originalCategories.length);
         
-        // Render data awal
-        renderAPIData(originalCategories);
+        // Render category tabs and initial API data
+        renderCategoryTabs();
+        renderAPIData(originalCategories, currentCategory);
         
     } catch (error) {
         console.error('Error loading API data:', error);
-        // Tetap render dengan data kosong
         renderAPIData([]);
+        showToast('Using demo configuration', 'info');
     }
 }
 
-function renderAPIData(categories) {
-    console.log('Rendering API data:', categories.length, 'categories');
+function renderCategoryTabs() {
+    const categoryTabs = document.getElementById('categoryTabs');
+    if (!categoryTabs) return;
     
+    // Clear existing tabs
+    categoryTabs.innerHTML = '';
+    
+    // Add "All" tab first
+    const allCategoriesCount = originalCategories.reduce((total, cat) => 
+        total + (cat.items ? cat.items.length : 0), 0);
+    
+    let tabsHtml = `
+        <button onclick="filterByCategory('all')" 
+                class="category-tab ${currentCategory === 'all' ? 'active' : ''} glass px-5 py-3 rounded-xl flex items-center gap-2 text-sm md:text-base">
+            <i class="fas fa-grid text-slate-300"></i>
+            <span>All</span>
+            <span class="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full">${allCategoriesCount}</span>
+        </button>
+    `;
+    
+    // Add category tabs
+    originalCategories.forEach((category, index) => {
+        if (!category || !category.name) return;
+        
+        const icon = categoryIcons[category.name] || 'folder';
+        const itemCount = category.items ? category.items.length : 0;
+        const categorySlug = category.name.toLowerCase().replace(/\s+/g, '-');
+        
+        tabsHtml += `
+            <button onclick="filterByCategory('${categorySlug}', ${index})" 
+                    class="category-tab ${currentCategory === categorySlug ? 'active' : ''} glass px-5 py-3 rounded-xl flex items-center gap-2 text-sm md:text-base">
+                <i class="fas fa-${icon} text-slate-300"></i>
+                <span>${category.name}</span>
+                <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full">${itemCount}</span>
+            </button>
+        `;
+    });
+    
+    categoryTabs.innerHTML = tabsHtml;
+    
+    // Update category count
+    const categoryCount = document.getElementById('categoryCount');
+    if (categoryCount) {
+        categoryCount.textContent = `${originalCategories.length} categories`;
+    }
+}
+
+function filterByCategory(categorySlug, index = null) {
+    currentCategory = categorySlug;
+    
+    // Update active tab
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = document.querySelector(`.category-tab[onclick*="${categorySlug}"]`);
+    if (activeTab) activeTab.classList.add('active');
+    
+    // Filter and render API data
+    let filteredData = [];
+    
+    if (categorySlug === 'all') {
+        filteredData = originalCategories;
+    } else if (index !== null && originalCategories[index]) {
+        filteredData = [originalCategories[index]];
+    } else {
+        // Find category by slug
+        originalCategories.forEach(category => {
+            const slug = category.name.toLowerCase().replace(/\s+/g, '-');
+            if (slug === categorySlug) {
+                filteredData = [category];
+            }
+        });
+    }
+    
+    renderAPIData(filteredData, categorySlug);
+    
+    // Show/hide empty category message
+    const emptyCategory = document.getElementById('emptyCategory');
+    if (emptyCategory) {
+        const hasItems = filteredData.some(category => 
+            category.items && category.items.length > 0
+        );
+        emptyCategory.classList.toggle('hidden', hasItems);
+    }
+}
+
+function renderAPIData(categories, currentCategory = 'all') {
     const apiList = document.getElementById('apiList');
+    const noResults = document.getElementById('noResults');
+    const emptyCategory = document.getElementById('emptyCategory');
+    
     if (!apiList) {
         console.error('apiList element not found!');
         return;
@@ -130,163 +242,201 @@ function renderAPIData(categories) {
     apiList.innerHTML = '';
     
     if (!categories || categories.length === 0) {
-        apiList.innerHTML = '<div class="text-center py-8 text-gray-500">No API data available</div>';
+        apiList.innerHTML = `
+            <div class="col-span-full text-center py-16">
+                <i class="fas fa-api text-4xl text-slate-500 mb-4"></i>
+                <h3 class="text-xl text-white mb-2">No API data available</h3>
+                <p class="text-slate-400">Add API endpoints to get started</p>
+            </div>
+        `;
         return;
     }
     
+    // Check if any category has items
+    let hasItems = false;
+    let allItems = [];
+    
+    categories.forEach(category => {
+        if (category && category.items && category.items.length > 0) {
+            hasItems = true;
+            allItems = [...allItems, ...category.items.map(item => ({
+                ...item,
+                categoryName: category.name
+            }))];
+        }
+    });
+    
+    if (!hasItems) {
+        if (noResults) noResults.classList.add('hidden');
+        if (emptyCategory) emptyCategory.classList.remove('hidden');
+        return;
+    }
+    
+    // Hide empty category message
+    if (emptyCategory) emptyCategory.classList.add('hidden');
+    
+    // Render all items as cards
     let html = '';
     
-    categories.forEach((category, catIndex) => {
-        if (!category || !category.items) return;
+    allItems.forEach((item, index) => {
+        if (!item) return;
         
-        const icon = categoryIcons[category.name] || 'folder';
-        const itemCount = category.items.length || 0;
+        const method = item.method || 'GET';
+        const pathParts = (item.path || '').split('?');
+        const path = pathParts[0] || '';
+        const itemName = item.name || 'Unnamed Endpoint';
+        const itemDesc = item.desc || 'No description';
+        const categoryName = item.categoryName || 'Uncategorized';
+        const status = item.status || 'ready';
+        
+        const statusClass = `status-${status}`;
+        const methodClass = `method-${method.toLowerCase()}`;
+        
+        // Generate unique ID for this endpoint
+        const endpointId = `endpoint-${Date.now()}-${index}`;
         
         html += `
-        <div class="category-group" data-category="${(category.name || '').toLowerCase()}">
-            <div class="mb-2">
-                <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-                    <button onclick="toggleCategory(${catIndex})" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors duration-150">
-                        <h2 class="font- flex items-center">
-                            <span class="material-icons text-lg mr-3 text-gray-400">${icon}</span>
-                            <span class="truncate max-w-xs text-sm">${category.name || 'Unnamed Category'}</span>
-                            <span class="ml-2 text-xs text-slate-400">(${itemCount})</span>
-                        </h2>
-                        <span class="material-icons transition-transform duration-150" id="category-icon-${catIndex}">expand_less</span>
-                    </button>
-                    
-                    <div id="category-${catIndex}">`;
-        
-        category.items.forEach((item, endpointIndex) => {
-            if (!item) return;
-            
-            const method = item.method || 'GET';
-            const pathParts = (item.path || '').split('?');
-            const path = pathParts[0] || '';
-            const itemName = item.name || 'Unnamed Endpoint';
-            const itemDesc = item.desc || 'No description';
-            
-            const statusClass = 'status-ready';
-
-            html += `
-                        <div class="border-t border-gray-700 api-item" 
-                             data-method="${method.toLowerCase()}"
-                             data-path="${path}"
-                             data-alias="${itemName}"
-                             data-description="${itemDesc}"
-                             data-category="${(category.name || '').toLowerCase()}">
-                            <button onclick="toggleEndpoint(${catIndex}, ${endpointIndex})" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors duration-150">
-                                <div class="flex items-center min-w-0 flex-1">
-                                    <span class="inline-block px-3 py-1 text-xs text-white mr-3 flex-shrink-0 method-${method.toLowerCase()}">
-                                        ${method}
-                                    </span>
-                                    <div class="flex flex-col min-w-0 flex-1">
-                                        <span class="truncate max-w-[90%] font-mono text-sm" title="${path}">${path}</span>
-                                        <div class="flex items-center">
-                                            <span class="text-[13px] text-gray-400 truncate max-w-[90%]" title="${itemName}">${itemName}</span>
-                                            <span class="ml-2 px-2 py-0.5 text-xs rounded-full ${statusClass}">${item.status || 'ready'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <span class="material-icons transition-transform duration-150 flex-shrink-0" id="endpoint-icon-${catIndex}-${endpointIndex}">expand_more</span>
-                            </button>
-                            
-                            <div id="endpoint-${catIndex}-${endpointIndex}" class="hidden bg-gray-800 p-4 border-t border-gray-700 expand-transition">
-                                <div class="mb-3">
-                                    <div class="text-gray-400 text-[13px]">${itemDesc}</div>
-                                </div>
-                                
-                                <div>
-                                    <form id="form-${catIndex}-${endpointIndex}">
-                                        <div class="mb-4 space-y-3" id="params-container-${catIndex}-${endpointIndex}">
-                                            <!-- Parameters will be inserted here -->
-                                        </div>
-                                        
-                                        <div class="mb-4">
-                                            <div class="text-gray-300 font-medium text-[12px] mb-2 flex items-center">
-                                                <span class="material-icons text-[14px] mr-1">link</span>
-                                                REQUEST URL
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded px-3 py-2 
-            max-h-20 overflow-x-auto overflow-y-hidden">
-    <code class="block text-[13px] text-slate-300 whitespace-nowrap" id="url-display-${catIndex}-${endpointIndex}">${window.location.origin}${item.path || ''}
-    </code>
-</div>
-                                                <button type="button" onclick="copyUrl(${catIndex}, ${endpointIndex})" class="copy-btn bg-gray-700 border border-gray-600 hover:border-gray-500 max-h-20 text-slate-300 px-3 py-2 rounded text-[13px] font-medium transition-colors duration-150">
-                                                    <i class="fas fa-copy"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex gap-2">
-                                            <button type="button" onclick="executeRequest(event, ${catIndex}, ${endpointIndex}, '${method}', '${path}', 'application/json')" class="btn-gradient text-white px-6 py-2 text-xs font-medium transition-colors duration-150 flex items-center gap-1">
-                                                <i class="fas fa-play"></i>
-                                                Execute
-                                            </button>
-                                            <button type="button" onclick="clearResponse(${catIndex}, ${endpointIndex})" class="bg-gray-700 border border-gray-600 hover:border-gray-500 text-slate-300 px-6 py-2 text-xs font-medium transition-colors duration-150 flex items-center gap-1">
-                                                <i class="fas fa-times"></i>
-                                                Clear
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <div id="response-${catIndex}-${endpointIndex}" class="hidden mt-4">
-                                    <div class="text-gray-300 font-medium text-[12px] mb-2 flex items-center">
-                                        <span class="material-icons text-[14px] mr-1">code</span>
-                                        RESPONSE
-                                    </div>
-                                    <div class="bg-gray-900 border border-gray-700 rounded overflow-hidden">
-                                        <div class="px-4 py-2 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <span id="response-status-${catIndex}-${endpointIndex}" class="text-[12px] px-2 py-1 rounded bg-green-500/20 text-green-400">200 OK</span>
-                                                <span id="response-time-${catIndex}-${endpointIndex}" class="text-[12px] text-gray-300">0ms</span>
-                                            </div>
-                                            <button onclick="copyResponse(${catIndex}, ${endpointIndex})" class="copy-btn text-gray-400 hover:text-white text-[13px]">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
-                                        <div class="p-0 max-h-90 overflow-scroll">
-                                            <div class="response-media-container" id="response-content-${catIndex}-${endpointIndex}"></div>
-                                        </div>
-                                    </div>
+            <div class="api-card glass rounded-2xl overflow-hidden" 
+                 data-method="${method.toLowerCase()}"
+                 data-path="${path}"
+                 data-alias="${itemName}"
+                 data-description="${itemDesc}"
+                 data-category="${categoryName.toLowerCase().replace(/\s+/g, '-')}">
+                
+                <!-- Card Header -->
+                <div class="p-5 border-b border-slate-800">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg ${methodClass}">
+                                <i class="fas fa-${method === 'GET' ? 'download' : method === 'POST' ? 'upload' : 'exchange-alt'} text-xs"></i>
+                            </span>
+                            <div>
+                                <h3 class="font-bold text-white truncate max-w-[200px]" title="${itemName}">${itemName}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded">${categoryName}</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full ${statusClass}">${status}</span>
                                 </div>
                             </div>
-                        </div>`;
-        });
-        
-        html += `</div></div></div>`;
+                        </div>
+                        <button onclick="toggleEndpoint('${endpointId}')" 
+                                class="text-slate-400 hover:text-white transition-colors">
+                            <i class="fas fa-chevron-down" id="icon-${endpointId}"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <code class="text-sm text-slate-300 bg-slate-900/50 px-3 py-2 rounded-lg block truncate" title="${path}">${path}</code>
+                    </div>
+                </div>
+                
+                <!-- Card Content (Collapsible) -->
+                <div id="${endpointId}" class="hidden expand-transition">
+                    <div class="p-5 space-y-4">
+                        <div>
+                            <p class="text-slate-400 text-sm">${itemDesc}</p>
+                        </div>
+                        
+                        <form id="form-${endpointId}">
+                            <div class="space-y-3" id="params-container-${endpointId}">
+                                <!-- Parameters will be inserted here -->
+                            </div>
+                            
+                            <div class="mt-6">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-link text-sm text-slate-400"></i>
+                                    <span class="text-sm font-medium text-slate-300">Request URL</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 overflow-x-auto">
+                                        <code class="text-sm text-slate-300 whitespace-nowrap" id="url-display-${endpointId}">
+                                            ${window.location.origin}${item.path || ''}
+                                        </code>
+                                    </div>
+                                    <button type="button" onclick="copyUrl('${endpointId}')" 
+                                            class="copy-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-3 rounded-xl transition-colors">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 mt-6">
+                                <button type="button" onclick="executeRequest(event, '${endpointId}', '${method}', '${path}')" 
+                                        class="btn-gradient text-white px-6 py-3 text-sm font-medium rounded-xl flex items-center gap-2 flex-1 justify-center">
+                                    <i class="fas fa-play"></i>
+                                    Execute
+                                </button>
+                                <button type="button" onclick="clearResponse('${endpointId}')" 
+                                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-3 text-sm font-medium rounded-xl flex items-center gap-2">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Response Section -->
+                    <div id="response-${endpointId}" class="hidden border-t border-slate-800">
+                        <div class="p-5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fas fa-code text-sm text-slate-400"></i>
+                                <span class="text-sm font-medium text-slate-300">Response</span>
+                            </div>
+                            <div class="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+                                <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span id="response-status-${endpointId}" class="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400">
+                                            200 OK
+                                        </span>
+                                        <span id="response-time-${endpointId}" class="text-xs text-slate-400">0ms</span>
+                                    </div>
+                                    <button onclick="copyResponse('${endpointId}')" 
+                                            class="text-slate-400 hover:text-white text-sm">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="p-4 max-h-80 overflow-auto">
+                                    <div class="response-media-container" id="response-content-${endpointId}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     });
     
     apiList.innerHTML = html;
     
     // Initialize parameters for each endpoint
     setTimeout(() => {
-        if (categories && categories.length > 0) {
-            categories.forEach((category, catIndex) => {
-                if (category && category.items) {
-                    category.items.forEach((item, endpointIndex) => {
-                        if (item) {
-                            initializeEndpointParameters(catIndex, endpointIndex, item);
-                        }
-                    });
-                }
-            });
-        }
+        allItems.forEach((item, index) => {
+            const endpointId = `endpoint-${Date.now()}-${index}`;
+            initializeEndpointParameters(endpointId, item);
+        });
     }, 100);
 }
 
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
     
-    if (!searchInput) {
-        console.warn('Search input not found');
-        return;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            handleSearch(this.value);
+        });
+        
+        // Add clear button functionality
+        const clearSearch = () => {
+            searchInput.value = '';
+            handleSearch('');
+            searchInput.focus();
+        };
+        
+        // You could add a clear button to the UI and attach this function
     }
     
-    searchInput.addEventListener('input', function() {
-        handleSearch(this.value);
+    // Add scroll to top functionality
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        // You could add a scroll-to-top button here
     });
 }
 
@@ -295,22 +445,18 @@ function handleSearch(searchTerm) {
     const noResults = document.getElementById('noResults');
     
     if (!searchTermLower) {
-        // Kembalikan ke data asli
-        console.log('Empty search, showing all');
-        renderAPIData(originalCategories);
+        // Return to current category view
+        filterByCategory(currentCategory);
         if (noResults) noResults.classList.add('hidden');
         return;
     }
     
     console.log('Searching for:', searchTermLower);
     
-    // Filter data
-    const filteredData = [];
-    
+    // Filter items across all categories
+    const allItems = [];
     originalCategories.forEach(category => {
         if (!category || !category.items) return;
-        
-        const filteredItems = [];
         
         category.items.forEach(item => {
             if (!item) return;
@@ -323,41 +469,59 @@ function handleSearch(searchTerm) {
                 (category.name || '').toLowerCase().includes(searchTermLower);
             
             if (matches) {
-                filteredItems.push(item);
+                allItems.push({
+                    ...item,
+                    categoryName: category.name
+                });
             }
         });
-        
-        if (filteredItems.length > 0) {
-            filteredData.push({
-                ...category,
-                items: filteredItems
-            });
-        }
     });
     
-    console.log('Filtered results:', filteredData.length, 'categories');
+    const apiList = document.getElementById('apiList');
+    if (!apiList) return;
     
-    if (filteredData.length === 0) {
-        const apiList = document.getElementById('apiList');
-        if (apiList) apiList.innerHTML = '';
+    if (allItems.length === 0) {
+        apiList.innerHTML = '';
         if (noResults) noResults.classList.remove('hidden');
     } else {
-        renderAPIData(filteredData);
+        // Create a fake category for search results
+        const searchResultsCategory = {
+            name: 'Search Results',
+            items: allItems
+        };
+        renderAPIData([searchResultsCategory], 'search');
         if (noResults) noResults.classList.add('hidden');
     }
 }
 
-function initializeEndpointParameters(catIndex, endpointIndex, item) {
-    const paramsContainer = document.getElementById(`params-container-${catIndex}-${endpointIndex}`);
+function toggleEndpoint(endpointId) {
+    const endpoint = document.getElementById(endpointId);
+    const icon = document.getElementById(`icon-${endpointId}`);
+    
+    if (!endpoint || !icon) return;
+    
+    if (endpoint.classList.contains('hidden')) {
+        endpoint.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        endpoint.classList.add('hidden');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
+function initializeEndpointParameters(endpointId, item) {
+    const paramsContainer = document.getElementById(`params-container-${endpointId}`);
     if (!paramsContainer) return;
     
     const params = extractParameters(item.path);
     
     if (params.length === 0) {
         paramsContainer.innerHTML = `
-            <div class="text-center py-3">
-                <i class="fas fa-check text-green-500 text-xs mb-1"></i>
-                <p class="text-xxs text-gray-400">No parameters required</p>
+            <div class="text-center py-3 rounded-xl bg-slate-900/30">
+                <i class="fas fa-check text-green-400 text-sm mb-2"></i>
+                <p class="text-xs text-slate-400">No parameters required</p>
             </div>
         `;
         return;
@@ -366,29 +530,33 @@ function initializeEndpointParameters(catIndex, endpointIndex, item) {
     let paramsHtml = '';
     params.forEach(param => {
         const isRequired = param.required;
-        paramsHtml += `<div>
-            <div class="flex items-center justify-between mb-1">
-                <label class="block text-[13px] font-medium text-slate-400">${param.name} ${isRequired ? '<span class="text-red-500">*</span>' : ''}</label>
-                <span class="text-[13px] text-gray-500">${param.type}</span>
+        paramsHtml += `
+            <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-slate-300">
+                        ${param.name} ${isRequired ? '<span class="text-red-400">*</span>' : ''}
+                    </label>
+                    <span class="text-xs text-slate-500">${param.type}</span>
+                </div>
+                <input 
+                    type="text" 
+                    name="${param.name}" 
+                    class="w-full px-4 py-3 border border-slate-800 text-sm focus:outline-none focus:border-cyan-500 bg-slate-900 rounded-xl placeholder:text-slate-500"
+                    placeholder="Enter ${param.name}..."
+                    ${isRequired ? 'required' : ''}
+                    oninput="updateRequestUrl('${endpointId}')"
+                    id="param-${endpointId}-${param.name}"
+                >
+                <p class="text-xs text-slate-500">${param.description}</p>
             </div>
-            <input 
-                type="text" 
-                name="${param.name}" 
-                class="w-full px-3 py-2 border border-gray-600 text-[13px] focus:outline-none focus:border-indigo-500 bg-gray-700 placeholder:text-slate-500"
-                placeholder= "Input ${param.name}..."
-                ${isRequired ? 'required' : ''}
-                oninput="updateRequestUrl(${catIndex}, ${endpointIndex})"
-                id="param-${catIndex}-${endpointIndex}-${param.name}"
-            >
-                               
-        </div>`;
+        `;
     });
     
     paramsContainer.innerHTML = paramsHtml;
     
     // Initial URL update
     setTimeout(() => {
-        updateRequestUrl(catIndex, endpointIndex);
+        updateRequestUrl(endpointId);
     }, 50);
 }
 
@@ -430,7 +598,10 @@ function getParamType(paramName) {
         'format': 'string',
         'quality': 'string',
         'size': 'string',
-        'limit': 'number'
+        'limit': 'number',
+        'count': 'number',
+        'page': 'number',
+        'offset': 'number'
     };
     return types[paramName] || 'string';
 }
@@ -442,102 +613,109 @@ function getParamDescription(paramName) {
         'question': 'Question or message to ask the AI',
         'query': 'Search query or keywords',
         'prompt': 'Text description for image generation',
-        'format': 'Output format (mp4, mp3, jpg, png)',
-        'quality': 'Video quality (360p, 720p, 1080p)',
-        'size': 'Image dimensions (512x512, 1024x1024)',
-        'limit': 'Number of results to return'
+        'format': 'Output format (mp4, mp3, jpg, png, json)',
+        'quality': 'Video quality (360p, 720p, 1080p, 4k)',
+        'size': 'Image dimensions (512x512, 1024x1024, 2048x2048)',
+        'limit': 'Number of results to return',
+        'count': 'Number of items to retrieve',
+        'page': 'Page number for pagination',
+        'offset': 'Starting position for results'
     };
-    return descriptions[paramName] || paramName;
+    return descriptions[paramName] || `Parameter: ${paramName}`;
 }
 
-function toggleCategory(index) {
-    const category = document.getElementById(`category-${index}`);
-    const icon = document.getElementById(`category-icon-${index}`);
-    if (category && icon) {
-        if (category.classList.contains('hidden')) {
-            category.classList.remove('hidden');
-            icon.textContent = 'expand_less';
-        } else {
-            category.classList.add('hidden');
-            icon.textContent = 'expand_more';
-        }
-    }
-}
-
-function toggleEndpoint(catIndex, endpointIndex) {
-    const endpoint = document.getElementById(`endpoint-${catIndex}-${endpointIndex}`);
-    const icon = document.getElementById(`endpoint-icon-${catIndex}-${endpointIndex}`);
-    if (endpoint && icon) {
-        if (endpoint.classList.contains('hidden')) {
-            endpoint.classList.remove('hidden');
-            icon.textContent = 'expand_less';
-        } else {
-            endpoint.classList.add('hidden');
-            icon.textContent = 'expand_more';
-        }
-    }
-}
-
-function updateRequestUrl(catIndex, endpointIndex) {
-    const form = document.getElementById(`form-${catIndex}-${endpointIndex}`);
+function updateRequestUrl(endpointId) {
+    const form = document.getElementById(`form-${endpointId}`);
     if (!form) return { url: '', hasErrors: false };
 
-    const urlDisplay = document.getElementById(`url-display-${catIndex}-${endpointIndex}`);
+    const urlDisplay = document.getElementById(`url-display-${endpointId}`);
     if (!urlDisplay) return { url: '', hasErrors: false };
 
     let hasErrors = false;
+    
+    // Store base URL if not already stored
     if (!urlDisplay.dataset.baseUrl) {
         const full = urlDisplay.textContent.trim();
         const [base, query] = full.split('?');
         urlDisplay.dataset.baseUrl = base;
         urlDisplay.dataset.defaultQuery = query || '';
     }
+    
     const baseUrl = urlDisplay.dataset.baseUrl;
     const params = new URLSearchParams(urlDisplay.dataset.defaultQuery);
 
+    // Update parameters from form inputs
     const inputs = form.querySelectorAll('input[type="text"]');
     inputs.forEach(input => {
         const name = input.name;
         const value = input.value.trim();
 
-        input.classList.remove('border-red-500');
+        // Remove previous error styling
+        input.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
 
+        // Validate required fields
         if (input.required && !value) {
             hasErrors = true;
+            input.classList.add('border-red-500', 'ring-1', 'ring-red-500');
         }
+        
         params.set(name, value);
     });
 
-    const finalUrl = baseUrl + '?' + params.toString();
+    // Build final URL
+    const queryString = params.toString();
+    const finalUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    
     urlDisplay.textContent = finalUrl;
+    
+    // Highlight the updated part (optional)
+    urlDisplay.classList.add('text-cyan-300');
+    setTimeout(() => urlDisplay.classList.remove('text-cyan-300'), 300);
 
     return { url: finalUrl, hasErrors };
 }
 
-async function executeRequest(event, catIndex, endpointIndex, method, path, produces) {
+async function executeRequest(event, endpointId, method, path) {
     event.preventDefault();
     
-    const { url, hasErrors } = updateRequestUrl(catIndex, endpointIndex);
+    const { url, hasErrors } = updateRequestUrl(endpointId);
     
     if (hasErrors) {
         showToast('Please fill in all required parameters', 'error');
+        
+        // Focus on first error
+        const form = document.getElementById(`form-${endpointId}`);
+        if (form) {
+            const firstError = form.querySelector('.border-red-500');
+            if (firstError) firstError.focus();
+        }
+        
         return;
     }
     
-    const responseDiv = document.getElementById(`response-${catIndex}-${endpointIndex}`);
-    const responseContent = document.getElementById(`response-content-${catIndex}-${endpointIndex}`);
-    const responseStatus = document.getElementById(`response-status-${catIndex}-${endpointIndex}`);
-    const responseTime = document.getElementById(`response-time-${catIndex}-${endpointIndex}`);
+    const responseDiv = document.getElementById(`response-${endpointId}`);
+    const responseContent = document.getElementById(`response-content-${endpointId}`);
+    const responseStatus = document.getElementById(`response-status-${endpointId}`);
+    const responseTime = document.getElementById(`response-time-${endpointId}`);
     
     if (!responseDiv || !responseContent || !responseStatus || !responseTime) {
         showToast('Error: Response elements not found', 'error');
         return;
     }
     
+    // Show response section
     responseDiv.classList.remove('hidden');
-    responseContent.innerHTML = '<div class="loader mx-auto mt-6"></div>';
+    
+    // Show loading state
+    responseContent.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12">
+            <div class="loader mb-4"></div>
+            <p class="text-sm text-slate-400">Sending request to the cosmos...</p>
+        </div>
+    `;
+    
     responseStatus.textContent = 'Loading...';
-    responseStatus.className = 'text-xs px-2 py-1 rounded bg-gray-600 text-gray-300';
+    responseStatus.className = 'text-xs px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400';
     responseTime.textContent = '';
     
     const startTime = Date.now();
@@ -549,11 +727,15 @@ async function executeRequest(event, catIndex, endpointIndex, method, path, prod
             method: method,
             headers: {
                 'Accept': '*/*',
-                'User-Agent': 'Kynas-API-Docs'
+                'User-Agent': 'Kynas-API-Docs-Cosmic',
+                'Content-Type': 'application/json'
             }
         });
         
         const responseTimeMs = Date.now() - startTime;
+        
+        // Update response info
+        responseTime.textContent = `${responseTimeMs}ms`;
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -562,10 +744,9 @@ async function executeRequest(event, catIndex, endpointIndex, method, path, prod
         // Get content type
         const contentType = response.headers.get('content-type') || '';
         
-        // Update response info
+        // Update status badge
         responseStatus.textContent = `${response.status} OK`;
-        responseStatus.className = 'text-xs px-2 py-1 rounded bg-green-500/20 text-green-400';
-        responseTime.textContent = `${responseTimeMs}ms`;
+        responseStatus.className = 'text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400';
         
         // Handle different content types
         if (contentType.startsWith('image/')) {
@@ -573,9 +754,11 @@ async function executeRequest(event, catIndex, endpointIndex, method, path, prod
             const blobUrl = URL.createObjectURL(blob);
             
             responseContent.innerHTML = `
-                <img src="${blobUrl}" 
-                     alt="Image Response" 
-                     class="max-w-full max-h-full object-contain rounded">
+                <div class="flex items-center justify-center p-4">
+                    <img src="${blobUrl}" 
+                         alt="Image Response" 
+                         class="max-w-full max-h-72 object-contain rounded-xl shadow-lg">
+                </div>
             `;
             
         } else if (contentType.includes('audio/')) {
@@ -583,9 +766,12 @@ async function executeRequest(event, catIndex, endpointIndex, method, path, prod
             const blobUrl = URL.createObjectURL(blob);
             
             responseContent.innerHTML = `
-                <audio controls autoplay class="w-full max-w-md">
-                    <source src="${blobUrl}" type="${contentType}">
-                </audio>
+                <div class="flex flex-col items-center justify-center p-6">
+                    <audio controls autoplay class="w-full max-w-md">
+                        <source src="${blobUrl}" type="${contentType}">
+                    </audio>
+                    <p class="text-xs text-slate-400 mt-3">Audio response</p>
+                </div>
             `;
             
         } else if (contentType.includes('video/')) {
@@ -593,7 +779,7 @@ async function executeRequest(event, catIndex, endpointIndex, method, path, prod
             const blobUrl = URL.createObjectURL(blob);
             
             responseContent.innerHTML = `
-                <video controls autoplay class="w-full h-full object-contain rounded">
+                <video controls autoplay class="w-full h-full max-h-72 object-contain rounded-xl">
                     <source src="${blobUrl}" type="${contentType}">
                 </video>
             `;
@@ -606,21 +792,34 @@ async function executeRequest(event, catIndex, endpointIndex, method, path, prod
             }
             
             const formattedResponse = JSON.stringify(data, null, 2);
+            const highlightedJson = Prism ? Prism.highlight(formattedResponse, Prism.languages.json, 'json') : formattedResponse;
+            
             responseContent.innerHTML = `
-<pre class="block whitespace-pre-wrap text-xs px-4 pt-3 pb-2 overflow-x-auto leading-relaxed">
+                <pre class="text-sm font-mono text-slate-300 bg-slate-900 p-4 rounded-xl overflow-x-auto">
 ${formattedResponse}
-</pre>`;
-           
+                </pre>
+            `;
+            
         } else if (contentType.includes('text/')) {
             const text = await response.text();
+            
             responseContent.innerHTML = `
-                <pre class="text-xs p-4 overflow-x-auto whitespace-pre-wrap">${escapeHtml(text)}</pre>
+                <pre class="text-sm font-mono text-slate-300 bg-slate-900 p-4 rounded-xl overflow-x-auto whitespace-pre-wrap">
+${escapeHtml(text)}
+                </pre>
             `;
             
         } else {
             const text = await response.text();
+            
             responseContent.innerHTML = `
-                <pre class="text-xs p-4 overflow-x-auto whitespace-pre-wrap">${escapeHtml(text)}</pre>
+                <div class="text-center p-6">
+                    <i class="fas fa-file-alt text-3xl text-slate-400 mb-3"></i>
+                    <p class="text-sm text-slate-400">Raw response</p>
+                    <pre class="text-xs font-mono text-slate-300 bg-slate-900 p-3 mt-2 rounded-xl overflow-x-auto">
+${escapeHtml(text.substring(0, 1000))}${text.length > 1000 ? '...' : ''}
+                    </pre>
+                </div>
             `;
         }
         
@@ -632,62 +831,97 @@ ${formattedResponse}
         const errorMessage = error.message || 'Unknown error occurred';
         responseContent.innerHTML = `
             <div class="text-center py-8">
-                <i class="fas fa-exclamation-triangle text-2xl text-red-400 mb-3"></i>
-                <div class="text-sm font-medium text-red-400">Error</div>
-                <div class="text-xs text-gray-400 mt-1">${escapeHtml(errorMessage)}</div>
+                <i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-3"></i>
+                <div class="text-base font-medium text-red-400 mb-1">Error</div>
+                <div class="text-sm text-slate-400">${escapeHtml(errorMessage)}</div>
             </div>
         `;
+        
         responseStatus.textContent = 'Error';
-        responseStatus.className = 'text-xs px-2 py-1 rounded bg-red-500/20 text-red-400';
-        responseTime.textContent = '0ms';
+        responseStatus.className = 'text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-400';
         
         showToast(`Request failed: ${errorMessage}`, 'error');
     }
 }
 
-function clearResponse(catIndex, endpointIndex) {
-    const form = document.getElementById(`form-${catIndex}-${endpointIndex}`);
-    const responseDiv = document.getElementById(`response-${catIndex}-${endpointIndex}`);
+function clearResponse(endpointId) {
+    const form = document.getElementById(`form-${endpointId}`);
+    const responseDiv = document.getElementById(`response-${endpointId}`);
     
     if (!form || !responseDiv) return;
     
     // Clear inputs
     const inputs = form.querySelectorAll('input[type="text"]');
     inputs.forEach(input => {
-        input.classList.remove('border-red-500');
+        input.value = '';
+        input.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
     });
     
     // Hide response
     responseDiv.classList.add('hidden');
     
     // Update URL
-    updateRequestUrl(catIndex, endpointIndex);
+    updateRequestUrl(endpointId);
     
     showToast('Form cleared', 'info');
 }
 
-function copyUrl(catIndex, endpointIndex) {
-    const urlDisplay = document.getElementById(`url-display-${catIndex}-${endpointIndex}`);
+function copyUrl(endpointId) {
+    const urlDisplay = document.getElementById(`url-display-${endpointId}`);
     if (!urlDisplay) return;
     
-    const url = urlDisplay.textContent.trim()
+    const url = urlDisplay.textContent.trim();
     
     navigator.clipboard.writeText(url).then(() => {
-        showToast('URL copied!', 'success');
+        showToast('URL copied to clipboard!', 'success');
+        
+        // Visual feedback
+        const btn = event.target.closest('button');
+        if (btn) {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.add('bg-green-500/20', 'text-green-400');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('bg-green-500/20', 'text-green-400');
+            }, 2000);
+        }
     }).catch(err => {
         console.error('Failed to copy URL:', err);
         showToast('Failed to copy URL', 'error');
     });
 }
 
-function copyResponse(catIndex, endpointIndex) {
-    const responseContent = document.getElementById(`response-content-${catIndex}-${endpointIndex}`);
+function copyResponse(endpointId) {
+    const responseContent = document.getElementById(`response-content-${endpointId}`);
     if (!responseContent) return;
     
-    const text = responseContent.textContent || responseContent.innerText;
+    let text = '';
+    
+    // Extract text based on content type
+    const img = responseContent.querySelector('img');
+    const audio = responseContent.querySelector('audio');
+    const video = responseContent.querySelector('video');
+    const pre = responseContent.querySelector('pre');
+    
+    if (pre) {
+        text = pre.textContent || pre.innerText;
+    } else if (img) {
+        text = 'Image response (cannot copy)';
+    } else if (audio || video) {
+        text = 'Media response (cannot copy)';
+    } else {
+        text = responseContent.textContent || responseContent.innerText;
+    }
+    
+    if (text.includes('cannot copy')) {
+        showToast(text, 'info');
+        return;
+    }
     
     navigator.clipboard.writeText(text).then(() => {
-        showToast('Response copied!', 'success');
+        showToast('Response copied to clipboard!', 'success');
     }).catch(err => {
         console.error('Failed to copy response:', err);
         showToast('Failed to copy response', 'error');
@@ -695,35 +929,38 @@ function copyResponse(catIndex, endpointIndex) {
 }
 
 function showToast(message, type = 'info') {
+    // Remove existing toast
     const existing = document.querySelector('.toast');
     if (existing) existing.remove();
     
+    // Create new toast
     const toast = document.createElement('div');
     toast.className = 'toast';
     
-    const icon = {
-        'success': 'fa-check-circle',
-        'error': 'fa-exclamation-circle',
-        'info': 'fa-info-circle'
-    }[type] || 'fa-info-circle';
+    // Set icon and color
+    const icons = {
+        'success': { icon: 'fa-check-circle', color: '#10b981' },
+        'error': { icon: 'fa-exclamation-circle', color: '#ef4444' },
+        'info': { icon: 'fa-info-circle', color: '#3b82f6' },
+        'warning': { icon: 'fa-exclamation-triangle', color: '#f59e0b' }
+    };
     
-    const color = {
-        'success': '#10b981',
-        'error': '#ef4444',
-        'info': '#3b82f6'
-    }[type] || '#3b82f6';
+    const config = icons[type] || icons.info;
     
     toast.innerHTML = `
-        <i class="fas ${icon} text-sm" style="color: ${color}"></i>
-        <span>${message}</span>
+        <div class="flex items-center gap-3">
+            <i class="fas ${config.icon} text-lg" style="color: ${config.color}"></i>
+            <span class="text-sm">${message}</span>
+        </div>
     `;
     
     document.body.appendChild(toast);
     
+    // Auto remove after 4 seconds
     setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 4000);
 }
 
 function escapeHtml(text) {
@@ -739,8 +976,12 @@ function showErrorMessage(err = undefined) {
     
     loadingScreen.innerHTML = `
         <div class="text-center">
-            <i class="fas fa-wifi text-3xl text-slate-400 mb-4"></i>
+            <i class="fas fa-satellite-dish text-4xl text-slate-400 mb-4"></i>
+            <h3 class="text-lg text-white mb-2">Connection Issue</h3>
             <p class="text-sm text-slate-400">${err ? err : "Using demo configuration"}</p>
+            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-sm">
+                <i class="fas fa-redo mr-2"></i> Retry Connection
+            </button>
         </div>
     `;
     
@@ -750,26 +991,14 @@ function showErrorMessage(err = undefined) {
     
     // Load empty data
     originalCategories = [];
+    renderCategoryTabs();
     renderAPIData([]);
     
-    // Setup event listeners
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            handleSearch(this.value);
-        });
-    }
-    
     updateActiveUsers();
-    
-    setTimeout(() => {
-        loadingScreen.style.opacity = '0';
-        setTimeout(() => loadingScreen.style.display = 'none', 300);
-    }, 1000);
 }
 
-// Global functions
-window.toggleCategory = toggleCategory;
+// Global functions for HTML onclick attributes
+window.filterByCategory = filterByCategory;
 window.toggleEndpoint = toggleEndpoint;
 window.executeRequest = executeRequest;
 window.clearResponse = clearResponse;
