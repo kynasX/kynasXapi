@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Browse through our collection of API endpoints. Find what you need or discover something new.">
-    <meta name="theme-color" content="#0a0e17">
+    <meta name="theme-color" content="#1a202c">
     <title>Kynas API</title>
     <link rel="icon" href="/src/icon.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,9 +12,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-somehash" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -26,40 +28,6 @@
                     },
                     fontSize: {
                         'xxs': ['0.65rem', { lineHeight: '0.9rem' }]
-                    },
-                    colors: {
-                        cosmic: {
-                            'primary': '#0a0e17',
-                            'secondary': '#13182a',
-                            'accent': '#1e253a',
-                            'neon': '#00d4ff',
-                            'purple': '#9d4edd',
-                            'pink': '#ff2e63'
-                        }
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-                        'shimmer': 'shimmer 3s infinite linear',
-                        'stars': 'stars 100s linear infinite'
-                    },
-                    keyframes: {
-                        'float': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' }
-                        },
-                        'pulse-glow': {
-                            '0%, 100%': { opacity: 1 },
-                            '50%': { opacity: 0.7 }
-                        },
-                        'shimmer': {
-                            '0%': { backgroundPosition: '-1000px 0' },
-                            '100%': { backgroundPosition: '1000px 0' }
-                        },
-                        'stars': {
-                            '0%': { transform: 'translateY(0) translateX(0)' },
-                            '100%': { transform: 'translateY(-1000px) translateX(1000px)' }
-                        }
                     }
                 }
             }
@@ -67,140 +35,18 @@
     </script>
 
     <style>
-        /* Cosmic Background */
-        body {
-            background-color: #0a0e17;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(29, 78, 216, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 30%);
-            position: relative;
-            overflow-x: hidden;
-        }
         
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            background-image: 
-                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
-                radial-gradient(2px 2px at 40px 70px, #fff, transparent),
-                radial-gradient(1px 1px at 90px 40px, #ddd, transparent),
-                radial-gradient(1px 1px at 130px 80px, #fff, transparent),
-                radial-gradient(2px 2px at 160px 120px, #eee, transparent);
-            background-repeat: repeat;
-            background-size: 200px 200px;
-            animation: stars 100s linear infinite;
-        }
-        
-        /* Glass Effect */
         .glass {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(16px) saturate(180%);
+            background: rgba(23, 25, 35, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.125);
         }
         
-        .glass-light {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Neon Gradient Text */
-        .gradient-text {
-            background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 50%, #ff2e63 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            background-size: 200% auto;
-            animation: shimmer 3s infinite linear;
-        }
-        
-        /* Button Gradients */
-        .btn-gradient {
-            background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 212, 255, 0.4);
-        }
-        
-        /* Method Tags */
-        .method-get {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-        
-        .method-post {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        }
-        
-        .method-put {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-        
-        .method-delete {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-        
-        /* Category Tabs */
-        .category-tab {
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .category-tab::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #00d4ff, #9d4edd);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-        
-        .category-tab.active::after {
-            width: 100%;
-        }
-        
-        .category-tab:hover::after {
-            width: 100%;
-        }
-        
-        /* Status Badges */
-        .status-ready {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        
-        .status-update {
-            background: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-        
-        .status-error {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        
-        /* Loader */
         .loader {
             width: 28px;
             height: 28px;
-            border: 2px solid rgba(0, 212, 255, 0.2);
-            border-top: 2px solid #00d4ff;
+            border: 2px solid #4a5568;
+            border-top: 2px solid #e2e8f0;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -209,36 +55,93 @@
             to { transform: rotate(360deg); }
         }
         
-        /* API Card Hover Effect */
-        .api-card {
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        .api-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(0, 212, 255, 0.3);
-            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
+        .btn-gradient:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
         }
         
-        /* Toast Notification */
+        .method-get {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .method-post {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .status-ready {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .status-update {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .blink {
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Transition for expand/collapse */
+        .expand-transition {
+            transition: all 0.3s ease;
+        }
+        
+        /* Copy button styles */
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+                        
+        
+        /* Toast notification */
         .toast {
             position: fixed;
             bottom: 80px;
             right: 20px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 0.85rem;
+            background: rgba(23, 25, 35, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.80rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             z-index: 1000;
             animation: slideIn 0.3s ease;
             backdrop-filter: blur(10px);
-            max-width: 320px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+        }
+        
+        .light .toast {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #1e293b;
         }
         
         @keyframes slideIn {
@@ -252,58 +155,20 @@
             }
         }
         
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* Light mode styles */
+        .light {
+            background: #f8fafc;
+            color: #1e293b;
         }
         
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 10px;
+        .light .glass {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(0, 0, 0, 0.125);
         }
         
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #00d4ff, #9d4edd);
-            border-radius: 10px;
-        }
-        
-        /* Search Highlight */
-        .highlight {
-            background-color: rgba(0, 212, 255, 0.2);
-            color: #00d4ff;
-            padding: 0 2px;
-            border-radius: 3px;
-        }
-        
-        /* Floating Contact Button */
-        .contact-customer {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 45;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .contact-customer:hover {
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.5);
-            animation-play-state: paused;
-        }
-        
-        .contact-customer svg {
-            width: 28px;
-            height: 28px;
+        .light .loader {
+            border: 2px solid #cbd5e1;
+            border-top: 2px solid #475569;
         }
         
         /* Media display styles */
@@ -316,170 +181,193 @@
             width: 100%;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .category-tabs-container {
-                overflow-x: auto;
-                padding-bottom: 10px;
-            }
-            
-            .category-tabs {
-                flex-wrap: nowrap;
-                width: max-content;
-            }
-            
-            .contact-customer {
-                bottom: 20px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-            }
+        /* Video full size */
+        .response-media-container video {
+            width: 100%;
+            height: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        /* Image full size */
+        .response-media-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Audio player styling */
+        .response-media-container audio {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Error display */
+        .response-media-container .error-container {
+            padding: 2rem;
+            text-align: center;
         }
         
-        /* Pulse animation for active elements */
-        .pulse-glow {
-            animation: pulse-glow 2s infinite;
+        /* Search highlight */
+        .highlight {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
         }
+        
+            .charging {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Card hover effects */
+    .stat-card {
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    
+.category-group {
+    display: block !important;
+}
+
+.api-item {
+    display: block !important;
+}
+
+.category-group[style*="display: none"],
+.category-group[style*="display:none"] {
+    display: none !important;
+}
+
+.api-item[style*="display: none"],
+.api-item[style*="display:none"] {
+    display: none !important;
+}
+
+.contact-customer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 45;
+  cursor: pointer;
+  transition: transform .3s ease, box-shadow .3s ease;
+  animation: floatBtn 4s ease-in-out infinite;
+}
+
+.contact-customer:hover {
+  transform: translateY(-8px) scale(1.08);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.7);
+  animation-play-state: paused; /* berhenti saat hover */
+}
+
+.contact-customer svg {
+  width: 26px;
+  height: 26px;
+}
+
+@keyframes floatBtn {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-20px); }
+  100% { transform: translateY(0); }
+}
     </style>
 </head>
-<body class="text-slate-300 antialiased font-sans min-h-screen">
-    <!-- Cosmic Background Elements -->
-    <div class="stars"></div>
+<body class="bg-gray-900 text-slate-300 antialiased font-mono min-h-screen">
     
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="fixed inset-0 bg-cosmic-primary flex items-center justify-center z-50">
+    <div id="loadingScreen" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
         <div class="text-center">
-            <div class="loader mx-auto mb-6"></div>
-            <h2 class="text-xl font-bold gradient-text mb-2">Kynas API</h2>
-            <p class="text-slate-400 text-sm">Loading cosmic interface...</p>
+            <div class="loader mx-auto mb-4"></div>
+            <p class="text-slate-400 text-s">Loading ...</p>
         </div>
     </div>
 
-    <main class="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
+    <main class="max-w-2xl mx-auto px-6 py-10">
+
         <!-- Header -->
-        <div class="text-center mb-10 md:mb-14">
-            <div class="flex flex-col items-center gap-4 mb-6">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-cyan-500/30 pulse-glow">
-                    <i class="fas fa-rocket text-white text-2xl"></i>
+        <div class="text-left mb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 md:w-10 h-10 md:h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+                    <i class="fas fa-code text-white text-lg"></i>
                 </div>
-                <div>
-                    <h1 id="titleApi" class="text-4xl md:text-5xl font-bold gradient-text mb-2">Kynas API</h1>
-                    <p id="descApi" class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
-                        Welcome to Kynas API documentation. Explore our cosmic collection of API endpoints with real-time testing.
-                    </p>
-                </div>
+                <h1 id="titleApi" class="text-3xl md:text-4xl font-semibold gradient-text">Kynas API</h1>
             </div>
+            <p id="descApi" class="text-slate-400 text-[14px] mx-auto mb-2">
+                Welcome to Kynas API documentation. This interactive interface allows you to explore and test our complete collection of API endpoints in real-time.
+            </p>
             
-            <!-- Stats -->
-            <div class="flex flex-wrap justify-center gap-4 mb-8">
-                <div class="glass px-5 py-3 rounded-2xl flex items-center gap-3">
-                    <i class="fas fa-bolt text-cyan-400"></i>
-                    <div>
-                        <div class="text-2xl font-bold text-white" id="activeUsers">1,500+</div>
-                        <div class="text-xs text-slate-400">Active Users</div>
-                    </div>
-                </div>
-                <div class="glass px-5 py-3 rounded-2xl flex items-center gap-3">
-                    <i class="fas fa-code text-purple-400"></i>
-                    <div>
-                        <div class="text-2xl font-bold text-white" id="endpointCount">56</div>
-                        <div class="text-xs text-slate-400">Endpoints</div>
-                    </div>
-                </div>
-                <div class="glass px-5 py-3 rounded-2xl flex items-center gap-3">
-                    <i class="fas fa-shield-alt text-pink-400"></i>
-                    <div>
-                        <div class="text-2xl font-bold text-white">99.9%</div>
-                        <div class="text-xs text-slate-400">Uptime</div>
-                    </div>
-                </div>
-            </div>
         </div>
         
+
         <!-- Search Bar -->
-        <div class="glass rounded-2xl p-1 mb-8">
-            <div class="relative">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex-1 relative">
                 <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                    <i class="fas fa-search text-slate-500"></i>
+                    <span class="material-icons text-gray-500 text-lg">search</span>
                 </div>
                 <input 
                     type="text" 
                     id="searchInput" 
-                    placeholder="Search API endpoints across the cosmos..." 
-                    class="w-full pl-12 pr-5 py-4 text-base bg-transparent text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-0"
+                    placeholder="Search API endpoints..." 
+                    class="w-full pl-12 pr-5 py-3 text-sm border border-gray-700 bg-gray-800 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 >
-                <div class="absolute inset-y-0 right-0 pr-5 flex items-center">
-                    <span class="text-xs text-slate-500 hidden md:block">Press / to focus</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Category Tabs (Horizontal) -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-white">Categories</h2>
-                <span class="text-sm text-slate-400" id="categoryCount">9 categories</span>
-            </div>
-            <div class="category-tabs-container">
-                <div id="categoryTabs" class="category-tabs flex flex-wrap gap-2 md:gap-3">
-                    <!-- Categories will be loaded here dynamically -->
-                </div>
             </div>
         </div>
 
         <!-- API Content -->
-        <div id="content" class="space-y-6">
+        <div id="content" class="space-y-4">
             <div id="noResults" class="text-center py-16 hidden">
                 <div class="max-w-md mx-auto">
-                    <i class="fas fa-search text-4xl text-slate-500 mb-4"></i>
-                    <h3 class="text-xl text-white mb-2">No results found</h3>
-                    <p class="text-slate-400">Try different keywords or browse categories</p>
+                    <i class="fas fa-search text-2xl text-slate-500 mb-3"></i>
+                    <h3 class="text-xs text-slate-400 mb-2">No results found</h3>
+                    <p class="text-xxs text-slate-500">Try different keywords</p>
                 </div>
             </div>
 
-            <div id="apiList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="apiList" class="space-y-3">
                 <!-- API list will be loaded here dynamically -->
-            </div>
-            
-            <div id="emptyCategory" class="text-center py-16 hidden">
-                <div class="max-w-md mx-auto">
-                    <i class="fas fa-folder-open text-4xl text-slate-500 mb-4"></i>
-                    <h3 class="text-xl text-white mb-2">No endpoints in this category</h3>
-                    <p class="text-slate-400">Select another category to explore APIs</p>
-                </div>
             </div>
         </div>
         
-        <!-- Floating Contact Button -->
-        <a id="contactCustomerBtn" href="#" target="_blank" class="contact-customer">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                <path fill="white" d="M16 3C8.82 3 3 8.82 3 16c0 2.65.83 5.2 2.4 7.36L3 29l5.87-2.33A12.9 12.9 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3zm7.42 18.1c-.32.9-1.58 1.68-2.56 1.89-.67.14-1.55.25-4.48-.96-3.74-1.55-6.14-5.3-6.32-5.55-.18-.25-1.52-2.02-1.52-3.85 0-1.83.96-2.73 1.3-3.1.34-.37.75-.46 1-.46h.72c.23 0 .55-.08.86.65.32.74 1.09 2.57 1.18 2.76.09.18.16.41.03.66-.13.25-.2.41-.39.63-.2.23-.41.5-.59.67-.2.18-.4.37-.17.73.23.36 1.01 1.66 2.17 2.69 1.49 1.33 2.75 1.74 3.12 1.94.37.2.58.18.8-.11.23-.3.92-1.07 1.16-1.44.25-.37.5-.3.84-.18.34.11 2.14 1.01 2.51 1.19.37.18.61.27.7.41.09.14.09.8-.23 1.7z"/>
-            </svg>
-        </a>
+<!-- Floating Contact Button -->
+<a id="contactCustomerBtn" href="#" target="_blank" class="contact-customer">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+    <path fill="white" d="M16 3C8.82 3 3 8.82 3 16c0 2.65.83 5.2 2.4 7.36L3 29l5.87-2.33A12.9 12.9 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3zm7.42 18.1c-.32.9-1.58 1.68-2.56 1.89-.67.14-1.55.25-4.48-.96-3.74-1.55-6.14-5.3-6.32-5.55-.18-.25-1.52-2.02-1.52-3.85 0-1.83.96-2.73 1.3-3.1.34-.37.75-.46 1-.46h.72c.23 0 .55-.08.86.65.32.74 1.09 2.57 1.18 2.76.09.18.16.41.03.66-.13.25-.2.41-.39.63-.2.23-.41.5-.59.67-.2.18-.4.37-.17.73.23.36 1.01 1.66 2.17 2.69 1.49 1.33 2.75 1.74 3.12 1.94.37.2.58.18.8-.11.23-.3.92-1.07 1.16-1.44.25-.37.5-.3.84-.18.34.11 2.14 1.01 2.51 1.19.37.18.61.27.7.41.09.14.09.8-.23 1.7z"/>
+  </svg>
+</a>
         
         <!-- Footer -->
-        <footer class="mt-16 pt-8 border-t border-slate-800 text-center text-slate-400">
-            <p id="footer" class="text-base mb-4">© 2024 Kynas API • Cosmic Edition v1.0 • JSON • Secure API Key</p>
-            
-            <div class="flex justify-center gap-6 text-xl mb-6">
-                <a id="telegramLink" target="_blank" class="hover:text-cyan-400 transition-all hover:scale-110" title="Telegram">
-                    <i class="fab fa-telegram-plane"></i>
-                </a>
-                <a id="whatsappLink" target="_blank" class="hover:text-green-400 transition-all hover:scale-110" title="WhatsApp">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-                <a id="youtubeLink" target="_blank" class="hover:text-red-400 transition-all hover:scale-110" title="YouTube">
-                    <i class="fab fa-youtube"></i>
-                </a>
-                <a id="githubLink" target="_blank" class="hover:text-white transition-all hover:scale-110" title="GitHub">
-                    <i class="fab fa-github"></i>
-                </a>
-            </div>
-            
-            <p class="text-sm text-slate-500">Built with <i class="fas fa-heart text-pink-500 mx-1"></i> for the developer community</p>
-        </footer>
+<!-- Footer -->
+<footer class="mt-12 pt-4 border-t border-gray-800 text-center text-slate-400 text-[14px]">
+  <p id="footer">© 2024 Kynas API • v1.0.0 • JSON • API Key</p>
+
+  <p class="flex justify-center gap-4 pt-2 text-[20px]">
+    <a id="telegramLink" target="_blank" class="hover:text-white transition" title="Telegram">
+      <i class="fab fa-telegram-plane"></i>
+    </a>
+    <a id="whatsappLink" target="_blank" class="hover:text-white transition" title="WhatsApp">
+      <i class="fab fa-whatsapp"></i>
+    </a>
+    <a id="youtubeLink" target="_blank" class="hover:text-white transition" title="YouTube">
+      <i class="fab fa-youtube"></i>
+    </a>
+  </p>
+</footer>
     </main>
-    
-    <script src="/script.js"></script>
+ <script src="/script.js"></script>
 </body>
 </html>
