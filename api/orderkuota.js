@@ -1,13 +1,12 @@
-const fetch = global.fetch
+const axios = require("axios");
 const { URLSearchParams } = require('url');
 const crypto = require("crypto");
 const QRCode = require('qrcode');
 const { ImageUploadService } = require('node-upload-images');
 
-// CLASS OrderKuota
+// 🧩 CLASS OrderKuota - GemaAi Optimized
 class OrderKuota {
   static API_URL = 'https://app.orderkuota.com/api/v2';
-  static API_URL_ORDER = 'https://app.orderkuota.com/api/v2/order';
   static HOST = 'app.orderkuota.com';
   static USER_AGENT = 'okhttp/4.12.0';
   static APP_VERSION_NAME = '25.09.18';
@@ -48,11 +47,8 @@ class OrderKuota {
     return await this.request('POST', `${OrderKuota.API_URL}/login`, payload);
   }
 
-  // Mutasi QRIS
   async getTransactionQris(type = '', userId = null) {
-    if (!userId && this.authToken) {
-      userId = this.authToken.split(':')[0];
-    }
+    if (!userId && this.authToken) userId = this.authToken.split(':')[0];
     
     const payload = new URLSearchParams({
       request_time: Date.now(),
@@ -65,23 +61,16 @@ class OrderKuota {
       'requests[qris_history][jumlah]': '',
       'requests[qris_history][jenis]': type,
       'requests[qris_history][page]': '1',
-      'requests[qris_history][dari_tanggal]': '',
-      'requests[qris_history][ke_tanggal]': '',
-      'requests[qris_history][keterangan]': '',
       'requests[0]': 'account',
       app_version_name: OrderKuota.APP_VERSION_NAME,
       ui_mode: 'light',
       phone_model: OrderKuota.PHONE_MODEL
     });
     
-    const endpoint = userId ? 
-      `${OrderKuota.API_URL}/qris/mutasi/${userId}` : 
-      `${OrderKuota.API_URL}/get`;
-      
+    const endpoint = userId ? `${OrderKuota.API_URL}/qris/mutasi/${userId}` : `${OrderKuota.API_URL}/get`;
     return await this.request('POST', endpoint, payload);
   }
 
-  // Generate QRIS
   async generateQr(amount = '') {
     const payload = new URLSearchParams({
       request_time: Date.now(),
@@ -96,20 +85,9 @@ class OrderKuota {
       app_version_name: OrderKuota.APP_VERSION_NAME,
       phone_model: OrderKuota.PHONE_MODEL
     });
-
-    const response = await this.request('POST', `${OrderKuota.API_URL}/get`, payload);
-
-    try {
-      if (response.success && response.qris_merchant_terms && response.qris_merchant_terms.results) {
-        return response.qris_merchant_terms.results;
-      }
-      return response;
-    } catch (err) {
-      return { error: err.message, raw: response };
-    }
+    return await this.request('POST', `${OrderKuota.API_URL}/get`, payload);
   }
 
-  // Withdrawal QRIS
   async withdrawalQris(amount = '') {
     const payload = new URLSearchParams({
       request_time: Date.now(),
@@ -122,42 +100,33 @@ class OrderKuota {
       'requests[qris_withdraw][amount]': amount,
       'requests[0]': 'account',
       app_version_name: OrderKuota.APP_VERSION_NAME,
-      ui_mode: 'light',
       phone_model: OrderKuota.PHONE_MODEL
     });
-
     return await this.request('POST', `${OrderKuota.API_URL}/get`, payload);
-  }
-
-  buildHeaders() {
-    return {
-      'Host': OrderKuota.HOST,
-      'User-Agent': OrderKuota.USER_AGENT,
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'accept-encoding': 'gzip'
-    };
   }
 
   async request(method, url, body = null) {
     try {
-      const res = await fetch(url, {
+      const config = {
         method,
-        headers: this.buildHeaders(),
-        body: body ? body.toString() : null,
-      });
-
-      const contentType = res.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        return await res.json();
-      } else {
-        return await res.text();
-      }
+        url,
+        headers: {
+          'Host': OrderKuota.HOST,
+          'User-Agent': OrderKuota.USER_AGENT,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept-Encoding': 'gzip'
+        },
+        data: body ? body.toString() : null
+      };
+      const res = await axios(config);
+      return res.data;
     } catch (err) {
-      return { error: err.message };
+      return { success: false, message: err.message };
     }
   }
 }
 
+// 🛠️ HELPER FUNCTIONS
 function convertCRC16(str) {
   let crc = 0xFFFF;
   for (let c = 0; c < str.length; c++) {
@@ -169,170 +138,74 @@ function convertCRC16(str) {
   return ("000" + (crc & 0xFFFF).toString(16).toUpperCase()).slice(-4);
 }
 
-function generateTransactionId() {
-  return `KYNAS-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
-}
-
-function generateExpirationTime() {
-  const expirationTime = new Date();
-  expirationTime.setMinutes(expirationTime.getMinutes() + 30);
-  return expirationTime;
-}
-
-async function elxyzFile(buffer) {
-  const service = new ImageUploadService('pixhost.to');
-  const { directLink } = await service.uploadFromBinary(buffer, 'kynas.png');
-  return directLink;
-}
-
 async function createQRIS(amount, codeqr) {
-  let qrisData = codeqr;
-  qrisData = qrisData.slice(0, -4);
+  let qrisData = codeqr.slice(0, -4);
   const step1 = qrisData.replace("010211", "010212");
   const step2 = step1.split("5802ID");
-  amount = amount.toString();
-  let uang = "54" + ("0" + amount.length).slice(-2) + amount;
-  uang += "5802ID";
+  let uang = "54" + ("0" + amount.toString().length).slice(-2) + amount + "5802ID";
   const final = step2[0] + uang + step2[1];
   const result = final + convertCRC16(final);
   const buffer = await QRCode.toBuffer(result);
-  const uploadedFile = await elxyzFile(buffer);
+  
+  const service = new ImageUploadService('pixhost.to');
+  const upload = await service.uploadFromBinary(buffer, 'qris.png');
+  
   return {
-    idtransaksi: generateTransactionId(),
+    idtransaksi: `GemaAi-${crypto.randomBytes(2).toString('hex').toUpperCase()}`,
     jumlah: amount,
-    expired: generateExpirationTime(),
-    imageqris: { url: uploadedFile }
+    expired: new Date(Date.now() + 30 * 60000),
+    imageqris: { url: upload.directLink }
   };
 }
 
-// ROUTE EXPORT
+// 🚀 ROUTE EXPORT
 module.exports = [
   {
     name: "Get OTP (tahap 1)",
-    desc: "Get OTP Orderkuota",
-    category: "Orderkuota",
-    path: "/orderkuota/getotp?apikey=&username=&password=",
+    path: "/orderkuota/getotp",
     async run(req, res) {
-      const { apikey, username, password } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      if (!username) return res.json({ status: false, error: 'Missing username' });
-      if (!password) return res.json({ status: false, error: 'Missing password' });
-      try {
-        const ok = new OrderKuota();
-        const login = await ok.loginRequest(username, password);
-        res.json({ status: true, result: login.results });
-      } catch (err) {
-        res.status(500).json({ status: false, error: err.message });
-      }
+      const { username, password } = req.query;
+      if (!username || !password) return res.json({ status: false, error: 'Input tidak lengkap' });
+      const ok = new OrderKuota();
+      const login = await ok.loginRequest(username, password);
+      res.json({ status: login.success, result: login.results || login });
     }
   },
   {
     name: "Get Token (tahap 2)",
-    desc: "Get Token Orderkuota",
-    category: "Orderkuota",
-    path: "/orderkuota/gettoken?apikey=&username=&otp=",
+    path: "/orderkuota/gettoken",
     async run(req, res) {
-      const { apikey, username, otp } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      if (!username) return res.json({ status: false, error: 'Missing username' });
-      if (!otp) return res.json({ status: false, error: 'Missing otp' });
-      try {
-        const ok = new OrderKuota();
-        const login = await ok.getAuthToken(username, otp);
-        res.json({ status: true, result: login.results });
-      } catch (err) {
-        res.status(500).json({ status: false, error: err.message });
-      }
+      const { username, otp } = req.query;
+      const ok = new OrderKuota();
+      const login = await ok.getAuthToken(username, otp);
+      res.json({ status: login.success, result: login.results || login });
     }
   },
   {
     name: "Cek Mutasi QRIS",
-    desc: "Cek Mutasi Qris Orderkuota",
-    category: "Orderkuota",
-    path: "/orderkuota/mutasiqr?apikey=&username=&token=",
+    path: "/orderkuota/mutasiqr",
     async run(req, res) {
-      const { apikey, username, token } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      if (!username) return res.json({ status: false, error: 'Missing username' });
-      if (!token) return res.json({ status: false, error: 'Missing token' });
-      try {
-        const ok = new OrderKuota(username, token);
-        let login = await ok.getTransactionQris();
-        login = login.qris_history.results
-        res.json({ status: true, result: login });
-      } catch (err) {
-        res.status(500).json({ status: false, error: err.message });
-      }
-    }
-  },
-  {
-    name: "Cek Profile",
-    desc: "Cek Profile Orderkuota",
-    category: "Orderkuota",
-    path: "/orderkuota/profile?apikey=&username=&token=",
-    async run(req, res) {
-      const { apikey, username, token } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      if (!username) return res.json({ status: false, error: 'Missing username' });
-      if (!token) return res.json({ status: false, error: 'Missing token' });
-      try {
-        const ok = new OrderKuota(username, token);
-        let login = await ok.getTransactionQris();
-        res.json({ status: true, result: login });
-      } catch (err) {
-        res.status(500).json({ status: false, error: err.message });
-      }
+      const { username, token } = req.query;
+      const ok = new OrderKuota(username, token);
+      const data = await ok.getTransactionQris();
+      res.json({ status: data.success, result: data.qris_history?.results || data });
     }
   },
   {
     name: "Create QRIS",
-    desc: "Generate QR Code Payment",
-    category: "Orderkuota",
-    path: "/orderkuota/createpayment?apikey=&username=&token=&amount=",
+    path: "/orderkuota/createpayment",
     async run(req, res) {
-      const { apikey, username, token, amount } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      if (!username) return res.json({ status: false, error: 'Missing username' });
-      if (!token) return res.json({ status: false, error: 'Missing token' });
-      if (!amount) return res.json({ status: false, error: 'Missing amount' });
-
+      const { username, token, amount } = req.query;
       try {
         const ok = new OrderKuota(username, token);
         const qrcodeResp = await ok.generateQr(amount);
-
-        if (!qrcodeResp.qris_data) {
-          return res.status(400).json({ status: false, error: "QRIS generation failed", raw: qrcodeResp });
+        if (!qrcodeResp.success || !qrcodeResp.qris_merchant_terms?.results?.qris_data) {
+          return res.json({ status: false, error: "Gagal ambil data QRIS", raw: qrcodeResp });
         }
-
-        const buffer = await createQRIS(amount, qrcodeResp.qris_data);        
-
-        res.status(200).json({
-          status: true,
-          result: buffer
-        });
-      } catch (error) {
-        res.status(500).json({ status: false, error: error.message });
-      }
-    }
-  },
-  {
-    name: "Withdraw QRIS",
-    desc: "Tarik saldo QRIS Orderkuota",
-    category: "Orderkuota",
-    path: "/orderkuota/wdqr?apikey=&username=&token=&amount=",
-    async run(req, res) {
-      const { apikey, username, token, amount } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      if (!username) return res.json({ status: false, error: 'Missing username' });
-      if (!token) return res.json({ status: false, error: 'Missing token' });
-      if (!amount) return res.json({ status: false, error: 'Missing amount' });
-
-      try {
-        const ok = new OrderKuota(username, token);
-        const wd = await ok.withdrawalQris(amount);
-        res.json({ status: true, result: wd });
-      } catch (error) {
-        res.status(500).json({ status: false, error: error.message });
+        const finalQr = await createQRIS(amount, qrcodeResp.qris_merchant_terms.results.qris_data);
+        res.json({ status: true, result: finalQr });
+      } catch (e) {
+        res.json({ status: false, error: e.message });
       }
     }
   }
