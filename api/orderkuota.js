@@ -4,16 +4,17 @@ const crypto = require("crypto");
 const QRCode = require('qrcode');
 const { ImageUploadService } = require('node-upload-images');
 
+// 🧩 CLASS OrderKuota - Versi 26.01.15 (Terbaru)
 class OrderKuota {
   static API_URL = 'https://app.orderkuota.com/api/v2';
   static HOST = 'app.orderkuota.com';
   static USER_AGENT = 'okhttp/4.12.0';
   
-  // ✅ UPDATE KE VERSI TERBARU 26.01.15
+  // Update Versi Aplikasi Terbaru
   static APP_VERSION_NAME = '26.01.15';
   static APP_VERSION_CODE = '260115';
   
-  // ✅ APP_REG_ID & PHONE_UUID HARUS SERUPA DENGAN DEVICE REAL
+  // Identitas Device (Gunakan yang konsisten)
   static APP_REG_ID = 'cdzXkBynRECkAODZEHwkeV:APA91bHRyLlgNSlpVrC4Yv3xBgRRaePSaCYruHnNwrEK8_pX3kzitxzi0CxIDFc2oztCwcw7-zPgwE-6v_-rJCJdTX8qE_ADiSnWHNeZ5O7_BIlgS_1N8tw';
   static PHONE_MODEL = '23124RA7EO';
   static PHONE_UUID = 'cdzXkBynRECkAODZEHwkeV';
@@ -24,6 +25,7 @@ class OrderKuota {
     this.authToken = authToken;
   }
 
+  // Helper CRC16 untuk QRIS
   static convertCRC16(str) {
     let crc = 0xFFFF;
     for (let c = 0; c < str.length; c++) {
@@ -54,7 +56,7 @@ class OrderKuota {
     }
   }
 
-  // ✅ GET OTP - UPDATED VERSION
+  // TAHAP 1: Request OTP
   async loginRequest(username, password) {
     const payload = new URLSearchParams({
       username: username,
@@ -71,18 +73,19 @@ class OrderKuota {
     return await this.request('POST', `${OrderKuota.API_URL}/login`, payload);
   }
 
-  // ✅ GET TOKEN - UPDATED VERSION
+  // ✅ FIX TAHAP 2: Get Token (Penukaran OTP)
   async getAuthToken(username, otp) {
     const payload = new URLSearchParams({
       username: username,
-      password: otp,
+      password: otp, // OTP menggantikan password untuk verifikasi
       request_time: Date.now(),
       app_reg_id: OrderKuota.APP_REG_ID,
       phone_android_version: OrderKuota.PHONE_ANDROID_VERSION,
       app_version_code: OrderKuota.APP_VERSION_CODE,
       phone_uuid: OrderKuota.PHONE_UUID,
       app_version_name: OrderKuota.APP_VERSION_NAME,
-      phone_model: OrderKuota.PHONE_MODEL
+      phone_model: OrderKuota.PHONE_MODEL,
+      ui_mode: 'light'
     });
     return await this.request('POST', `${OrderKuota.API_URL}/login`, payload);
   }
@@ -145,6 +148,7 @@ class OrderKuota {
   }
 }
 
+// 🛠️ INTERNAL HELPERS
 async function createQRIS(amount, codeqr) {
   let qrisData = codeqr.slice(0, -4);
   const step1 = qrisData.replace("010211", "010212");
@@ -163,7 +167,7 @@ async function createQRIS(amount, codeqr) {
   };
 }
 
-// 🚀 EXPORTS
+// 🚀 ROUTE EXPORTS
 module.exports = [
   {
     name: "Get OTP (tahap 1)",
@@ -197,7 +201,7 @@ module.exports = [
   },
   {
     name: "Cek Mutasi QRIS",
-    desc: "Cek Mutasi QRIS",
+    desc: "Riwayat Transaksi QRIS",
     category: "Orderkuota",
     path: "/orderkuota/mutasiqr",
     async run(req, res) {
@@ -211,8 +215,23 @@ module.exports = [
     }
   },
   {
+    name: "Cek Profile",
+    desc: "Informasi Saldo & Akun",
+    category: "Orderkuota",
+    path: "/orderkuota/profile",
+    async run(req, res) {
+      const { apikey, username, token } = req.query;
+      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
+      try {
+        const ok = new OrderKuota(username, token);
+        const data = await ok.getTransactionQris();
+        res.json({ status: data.success, result: data });
+      } catch (err) { res.status(500).json({ status: false, error: err.message }); }
+    }
+  },
+  {
     name: "Create QRIS",
-    desc: "Generate QRIS Payment",
+    desc: "Generate QR Payment",
     category: "Orderkuota",
     path: "/orderkuota/createpayment",
     async run(req, res) {
@@ -227,21 +246,6 @@ module.exports = [
         res.json({ status: true, result: finalQr });
       } catch (e) { res.json({ status: false, error: e.message }); }
     }
-  },
-  {
-      name: "Cek Profile",
-      desc: "Cek Profil & Saldo",
-      category: "Orderkuota",
-      path: "/orderkuota/profile",
-      async run(req, res) {
-        const { apikey, username, token } = req.query;
-        if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-        try {
-          const ok = new OrderKuota(username, token);
-          const data = await ok.getTransactionQris();
-          res.json({ status: data.success, result: data });
-        } catch (err) { res.status(500).json({ status: false, error: err.message }); }
-      }
   },
   {
     name: "Withdraw QRIS",
