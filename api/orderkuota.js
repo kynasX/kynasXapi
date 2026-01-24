@@ -4,13 +4,16 @@ const crypto = require("crypto");
 const QRCode = require('qrcode');
 const { ImageUploadService } = require('node-upload-images');
 
-// 🧩 CLASS OrderKuota - GemaAi Optimized Version
 class OrderKuota {
   static API_URL = 'https://app.orderkuota.com/api/v2';
   static HOST = 'app.orderkuota.com';
   static USER_AGENT = 'okhttp/4.12.0';
-  static APP_VERSION_NAME = '25.09.18';
-  static APP_VERSION_CODE = '250918';
+  
+  // ✅ UPDATE KE VERSI TERBARU 26.01.15
+  static APP_VERSION_NAME = '26.01.15';
+  static APP_VERSION_CODE = '260115';
+  
+  // ✅ APP_REG_ID & PHONE_UUID HARUS SERUPA DENGAN DEVICE REAL
   static APP_REG_ID = 'cdzXkBynRECkAODZEHwkeV:APA91bHRyLlgNSlpVrC4Yv3xBgRRaePSaCYruHnNwrEK8_pX3kzitxzi0CxIDFc2oztCwcw7-zPgwE-6v_-rJCJdTX8qE_ADiSnWHNeZ5O7_BIlgS_1N8tw';
   static PHONE_MODEL = '23124RA7EO';
   static PHONE_UUID = 'cdzXkBynRECkAODZEHwkeV';
@@ -21,7 +24,6 @@ class OrderKuota {
     this.authToken = authToken;
   }
 
-  // Helper untuk hitung CRC16 QRIS
   static convertCRC16(str) {
     let crc = 0xFFFF;
     for (let c = 0; c < str.length; c++) {
@@ -52,28 +54,35 @@ class OrderKuota {
     }
   }
 
+  // ✅ GET OTP - UPDATED VERSION
   async loginRequest(username, password) {
     const payload = new URLSearchParams({
-      username,
-      password,
+      username: username,
+      password: password,
       request_time: Date.now(),
       app_reg_id: OrderKuota.APP_REG_ID,
       phone_android_version: OrderKuota.PHONE_ANDROID_VERSION,
       app_version_code: OrderKuota.APP_VERSION_CODE,
-      phone_uuid: OrderKuota.PHONE_UUID
+      phone_uuid: OrderKuota.PHONE_UUID,
+      app_version_name: OrderKuota.APP_VERSION_NAME,
+      phone_model: OrderKuota.PHONE_MODEL,
+      ui_mode: 'light'
     });
     return await this.request('POST', `${OrderKuota.API_URL}/login`, payload);
   }
 
+  // ✅ GET TOKEN - UPDATED VERSION
   async getAuthToken(username, otp) {
     const payload = new URLSearchParams({
-      username,
+      username: username,
       password: otp,
       request_time: Date.now(),
       app_reg_id: OrderKuota.APP_REG_ID,
       phone_android_version: OrderKuota.PHONE_ANDROID_VERSION,
       app_version_code: OrderKuota.APP_VERSION_CODE,
-      phone_uuid: OrderKuota.PHONE_UUID
+      phone_uuid: OrderKuota.PHONE_UUID,
+      app_version_name: OrderKuota.APP_VERSION_NAME,
+      phone_model: OrderKuota.PHONE_MODEL
     });
     return await this.request('POST', `${OrderKuota.API_URL}/login`, payload);
   }
@@ -136,7 +145,6 @@ class OrderKuota {
   }
 }
 
-// 🛠️ INTERNAL HELPERS
 async function createQRIS(amount, codeqr) {
   let qrisData = codeqr.slice(0, -4);
   const step1 = qrisData.replace("010211", "010212");
@@ -155,7 +163,7 @@ async function createQRIS(amount, codeqr) {
   };
 }
 
-// 🚀 ROUTE EXPORTS (Untuk index.js lu)
+// 🚀 EXPORTS
 module.exports = [
   {
     name: "Get OTP (tahap 1)",
@@ -165,9 +173,11 @@ module.exports = [
     async run(req, res) {
       const { apikey, username, password } = req.query;
       if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      const ok = new OrderKuota();
-      const login = await ok.loginRequest(username, password);
-      res.json({ status: login.success || !!login.results, result: login.results || login });
+      try {
+        const ok = new OrderKuota();
+        const login = await ok.loginRequest(username, password);
+        res.json({ status: login.success || !!login.results, result: login.results || login });
+      } catch (err) { res.status(500).json({ status: false, error: err.message }); }
     }
   },
   {
@@ -178,40 +188,31 @@ module.exports = [
     async run(req, res) {
       const { apikey, username, otp } = req.query;
       if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      const ok = new OrderKuota();
-      const login = await ok.getAuthToken(username, otp);
-      res.json({ status: login.success, result: login.results || login });
+      try {
+        const ok = new OrderKuota();
+        const login = await ok.getAuthToken(username, otp);
+        res.json({ status: login.success, result: login.results || login });
+      } catch (err) { res.status(500).json({ status: false, error: err.message }); }
     }
   },
   {
     name: "Cek Mutasi QRIS",
-    desc: "Cek Riwayat QRIS",
+    desc: "Cek Mutasi QRIS",
     category: "Orderkuota",
     path: "/orderkuota/mutasiqr",
     async run(req, res) {
       const { apikey, username, token } = req.query;
       if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      const ok = new OrderKuota(username, token);
-      const data = await ok.getTransactionQris();
-      res.json({ status: data.success, result: data.qris_history?.results || data });
-    }
-  },
-  {
-    name: "Cek Profile",
-    desc: "Cek Akun Orderkuota",
-    category: "Orderkuota",
-    path: "/orderkuota/profile",
-    async run(req, res) {
-      const { apikey, username, token } = req.query;
-      if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      const ok = new OrderKuota(username, token);
-      const data = await ok.getTransactionQris();
-      res.json({ status: data.success, result: data });
+      try {
+        const ok = new OrderKuota(username, token);
+        const data = await ok.getTransactionQris();
+        res.json({ status: data.success, result: data.qris_history?.results || data });
+      } catch (err) { res.status(500).json({ status: false, error: err.message }); }
     }
   },
   {
     name: "Create QRIS",
-    desc: "Generate QR Payment",
+    desc: "Generate QRIS Payment",
     category: "Orderkuota",
     path: "/orderkuota/createpayment",
     async run(req, res) {
@@ -228,16 +229,33 @@ module.exports = [
     }
   },
   {
+      name: "Cek Profile",
+      desc: "Cek Profil & Saldo",
+      category: "Orderkuota",
+      path: "/orderkuota/profile",
+      async run(req, res) {
+        const { apikey, username, token } = req.query;
+        if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
+        try {
+          const ok = new OrderKuota(username, token);
+          const data = await ok.getTransactionQris();
+          res.json({ status: data.success, result: data });
+        } catch (err) { res.status(500).json({ status: false, error: err.message }); }
+      }
+  },
+  {
     name: "Withdraw QRIS",
-    desc: "Tarik Saldo ke Utama",
+    desc: "Tarik Saldo QRIS",
     category: "Orderkuota",
     path: "/orderkuota/wdqr",
     async run(req, res) {
       const { apikey, username, token, amount } = req.query;
       if (!global.apikey.includes(apikey)) return res.json({ status: false, error: 'Apikey invalid' });
-      const ok = new OrderKuota(username, token);
-      const wd = await ok.withdrawalQris(amount);
-      res.json({ status: wd.success, result: wd });
+      try {
+        const ok = new OrderKuota(username, token);
+        const wd = await ok.withdrawalQris(amount);
+        res.json({ status: wd.success, result: wd });
+      } catch (error) { res.status(500).json({ status: false, error: error.message }); }
     }
   }
 ];
