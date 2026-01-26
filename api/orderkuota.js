@@ -3,6 +3,9 @@ const QRCode = require('qrcode');
 const { ImageUploadService } = require('node-upload-images');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
+// =====================================
+//           CORE LOGIC CLASS
+// =====================================
 class OrderKuota {
   static API_URL = 'https://app.orderkuota.com/api/v2';
   static HOST = 'app.orderkuota.com';
@@ -103,6 +106,9 @@ class OrderKuota {
   }
 }
 
+// =====================================
+//          UTILITY FUNCTIONS
+// =====================================
 function convertCRC16(str) {
   let crc = 0xFFFF;
   for (let c = 0; c < str.length; c++) {
@@ -133,14 +139,16 @@ async function createQRIS(amount, codeqr) {
   };
 }
 
-// Export array agar register() di index.js memproses setiap endpoint
+// =====================================
+//      EXPORTED ARRAY (FITUR FIX)
+// =====================================
 module.exports = [
   {
     name: "Get OTP",
     desc: "Mendapatkan OTP login OrderKuota",
     category: "OrderKuota",
     path: "/orderkuota/getotp",
-    innerDesc: "username, password", // Agar parameter muncul di UI
+    innerDesc: "username, password",
     run: async (req, res) => {
       const { username, password } = req.query;
       if (!username || !password) return res.json({ status: false, message: "Input required" });
@@ -202,7 +210,8 @@ module.exports = [
     path: "/orderkuota/cekewallet",
     innerDesc: "service, number",
     run: async (req, res) => {
-      res.json({ status: true, message: "Fitur cek ewallet ready" });
+      // Fungsi statis hanya untuk dokumentasi
+      res.json({ status: true, message: "Fitur Cek Ewallet dalam pengembangan" });
     }
   }
 ];
