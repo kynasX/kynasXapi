@@ -64,9 +64,9 @@ const settings = {
     creator: "AustinOffc",
     apikey: ["kynas"]
   },
-    linkTelegram: "https://t.me/kynasX21",
-    linkWhatsapp: "https://whatsapp.com/channel/0029VbBD35J72WTyMioIRB44",
-    linkYoutube: "https://www.youtube.com/@kynasXstore"
+  linkTelegram: "https://t.me/kynasX21",
+  linkWhatsapp: "https://whatsapp.com/channel/0029VbBD35J72WTyMioIRB44",
+  linkYoutube: "https://www.youtube.com/@kynasXstore"
 };
 
 global.apikey = settings.apiSettings.apikey;
@@ -93,7 +93,7 @@ app.use((req, res, next) => {
 });
 
 // =====================================
-//           ROUTE LOADER (FLAT)
+//           ROUTE LOADER (FIXED)
 // =====================================
 let totalRoutes = 0;
 let rawEndpoints = {};
@@ -127,42 +127,35 @@ const register = (ep, file) => {
   }
 };
 
-fs.readdirSync(apiFolder).forEach((file) => {
-  const filePath = path.join(apiFolder, file);
+// Memastikan folder api ada sebelum dibaca
+if (fs.existsSync(apiFolder)) {
+  fs.readdirSync(apiFolder).forEach((file) => {
+    const filePath = path.join(apiFolder, file);
 
-  if (path.extname(file) === '.js') {
-    const routeModule = require(filePath);
+    if (path.extname(file) === '.js') {
+      const routeModule = require(filePath);
 
-    // ===============================
-    //     CASE 1: ARRAY OF ROUTES
-    // ===============================
-    if (Array.isArray(routeModule)) {
-      routeModule.forEach(ep => register(ep, file));
-      return;
+      // CASE 1: Array of Routes (Seperti pada orderkuota.js)
+      if (Array.isArray(routeModule)) {
+        routeModule.forEach(ep => register(ep, file));
+      } 
+      else {
+        // CASE 2: Single Route Object
+        register(routeModule, file);
+
+        // CASE 3: Function Export
+        if (typeof routeModule === "function") {
+          routeModule(app);
+        }
+
+        // CASE 4: Nested endpoint object
+        if (routeModule.endpoint) {
+          register(routeModule.endpoint, file);
+        }
+      }
     }
-
-    // ===============================
-    //     CASE 2: SINGLE ROUTE OBJ
-    // ===============================
-    register(routeModule, file);
-
-    // ===============================
-    //     CASE 3: FUNCTION EXPORT
-    // ===============================
-    if (typeof routeModule === "function") {
-      routeModule(app);
-    }
-
-    // ===============================
-    //     CASE 4: endpoint: {...}
-    // ===============================
-    if (routeModule.endpoint) {
-      register(routeModule.endpoint, file);
-    }
-
-    totalRoutes++;
-  }
-});
+  });
+}
 
 console.log(chalk.bgHex('#90EE90').hex('#333').bold(' Load Complete! ✓ '));
 console.log(chalk.bgHex('#90EE90').hex('#333').bold(` Total Routes Loaded: ${totalRoutes} `));
@@ -180,8 +173,9 @@ app.get('/settings', (req, res) => {
       }))
   };
 
-  settings.categories = endpoints.categories;
-  res.json(settings);
+  // Menggabungkan kategori ke dalam objek settings utama
+  const responseSettings = { ...settings, categories: endpoints.categories };
+  res.json(responseSettings);
 });
 
 // =====================================
