@@ -140,9 +140,9 @@ async function createQRIS(amount, codeqr) {
 }
 
 // =====================================
-//          EXPORTED ROUTES
+//      EXPORTED ARRAY (SEMUA FITUR)
 // =====================================
-// Sistem index.js Anda akan otomatis membaca array ini
+// Pastikan semua fitur dimasukkan ke dalam array module.exports
 module.exports = [
   {
     name: "Get OTP",
@@ -198,6 +198,16 @@ module.exports = [
       const ok = new OrderKuota(username, token);
       const history = await ok.getTransactionQris();
       res.json({ status: true, result: history.qris_history?.results || [] });
+    }
+  },
+  {
+    name: "Cek Ewallet",
+    desc: "Cek nama akun Ewallet",
+    category: "OrderKuota",
+    path: "/orderkuota/cekewallet",
+    run: async (req, res) => {
+      // Masukkan logika cek ewallet Anda di sini jika ada
+      res.json({ status: true, message: "Endpoint Cek Ewallet aktif" });
     }
   }
 ];
