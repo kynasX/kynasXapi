@@ -142,6 +142,7 @@ async function createQRIS(amount, codeqr) {
 // =====================================
 //          EXPORTED ROUTES
 // =====================================
+// Sistem index.js Anda akan otomatis membaca array ini
 module.exports = [
   {
     name: "Get OTP",
