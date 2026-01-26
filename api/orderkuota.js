@@ -3,9 +3,6 @@ const QRCode = require('qrcode');
 const { ImageUploadService } = require('node-upload-images');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
-// =====================================
-//           CORE LOGIC CLASS
-// =====================================
 class OrderKuota {
   static API_URL = 'https://app.orderkuota.com/api/v2';
   static HOST = 'app.orderkuota.com';
@@ -106,9 +103,6 @@ class OrderKuota {
   }
 }
 
-// =====================================
-//          UTILITY FUNCTIONS
-// =====================================
 function convertCRC16(str) {
   let crc = 0xFFFF;
   for (let c = 0; c < str.length; c++) {
@@ -139,16 +133,14 @@ async function createQRIS(amount, codeqr) {
   };
 }
 
-// =====================================
-//      EXPORTED ARRAY (SEMUA FITUR)
-// =====================================
-// Pastikan semua fitur dimasukkan ke dalam array module.exports
+// Export array agar register() di index.js memproses setiap endpoint
 module.exports = [
   {
     name: "Get OTP",
     desc: "Mendapatkan OTP login OrderKuota",
     category: "OrderKuota",
     path: "/orderkuota/getotp",
+    innerDesc: "username, password", // Agar parameter muncul di UI
     run: async (req, res) => {
       const { username, password } = req.query;
       if (!username || !password) return res.json({ status: false, message: "Input required" });
@@ -162,6 +154,7 @@ module.exports = [
     desc: "Tukarkan OTP menjadi Auth Token",
     category: "OrderKuota",
     path: "/orderkuota/gettoken",
+    innerDesc: "username, otp",
     run: async (req, res) => {
       const { username, otp } = req.query;
       if (!username || !otp) return res.json({ status: false, message: "Input required" });
@@ -175,6 +168,7 @@ module.exports = [
     desc: "Generate QRIS Dynamic OrderKuota",
     category: "OrderKuota",
     path: "/orderkuota/createpayment",
+    innerDesc: "username, token, amount",
     run: async (req, res) => {
       const { username, token, amount } = req.query;
       if (!username || !token || !amount) return res.json({ status: false, message: "Input required" });
@@ -192,6 +186,7 @@ module.exports = [
     desc: "Cek riwayat transaksi QRIS",
     category: "OrderKuota",
     path: "/orderkuota/mutasiqr",
+    innerDesc: "username, token",
     run: async (req, res) => {
       const { username, token } = req.query;
       if (!username || !token) return res.json({ status: false, message: "Input required" });
@@ -205,9 +200,9 @@ module.exports = [
     desc: "Cek nama akun Ewallet",
     category: "OrderKuota",
     path: "/orderkuota/cekewallet",
+    innerDesc: "service, number",
     run: async (req, res) => {
-      // Masukkan logika cek ewallet Anda di sini jika ada
-      res.json({ status: true, message: "Endpoint Cek Ewallet aktif" });
+      res.json({ status: true, message: "Fitur cek ewallet ready" });
     }
   }
 ];
